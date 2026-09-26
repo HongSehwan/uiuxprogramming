@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>두근두근 영어</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!--
@@ -37,16 +43,16 @@
 
         <section id="features">
             <h2>학습 기능</h2>
-            <ul>
-                <li>
+            <ul class="feature-list">
+                <li class="feature-card">
                     <h3>단계별 단어와 문장 학습</h3>
                     <p>매일 틈나는 시간에 수준에 맞는 단어와 문장을 반복 학습합니다.</p>
                 </li>
-                <li>
+                <li class="feature-card">
                     <h3>원어민 회화 프로그램</h3>
                     <p>단어와 문장을 익힌 후 원어민과 화상통화로 실전 대화를 연습할 수 있습니다.</p>
                 </li>
-                <li>
+                <li class="feature-card">
                     <h3>게임을 통한 영어 복습</h3>
                     <p>다양한 게임형 영어 학습 콘텐츠를 통해 재미있게 복습할 수 있습니다.</p>
                 </li>
@@ -64,7 +70,7 @@
             </ol>
         </section>
 
-        <section id="subscribe">
+        <section id="subscribe" class="subscribe-card">
             <h2> 학습 소식 받기 </h2>
             <form>
                 <label for="email">이메일</label>
