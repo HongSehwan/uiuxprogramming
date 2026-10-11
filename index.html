@@ -44,20 +44,69 @@
 
         <section id="features">
             <h2>학습 기능</h2>
-            <ul class="feature-list">
-                <li class="feature-card">
-                    <h3>단계별 단어와 문장 학습</h3>
-                    <p>매일 틈나는 시간에 수준에 맞는 단어와 문장을 반복 학습합니다.</p>
-                </li>
-                <li class="feature-card">
-                    <h3>원어민 회화 프로그램</h3>
-                    <p>단어와 문장을 익힌 후 원어민과 화상통화로 실전 대화를 연습할 수 있습니다.</p>
-                </li>
-                <li class="feature-card">
-                    <h3>게임을 통한 영어 복습</h3>
-                    <p>다양한 게임형 영어 학습 콘텐츠를 통해 재미있게 복습할 수 있습니다.</p>
-                </li>
-            </ul>
+            <div class="tabs" role="tablist" aria-label="기능 선택">
+                <button
+                    id="tab-practice"
+                    class="tab is-active"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="feature-practice"
+                    data-target="#feature-practice">
+                    단계별 영어 학습
+                </button>
+
+                <button
+                    id="tab-conversation"
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="feature-conversation"
+                    data-target="#feature-conversation">
+                    원어민 회화 프로그램
+                </button>
+
+                <button
+                    id="tab-review"
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="feature-review"
+                    data-target="#feature-review">
+                    영어 복습
+                </button>
+            </div>
+
+            <div
+                id="feature-practice"
+                class="panel is-active"
+                role="tabpanel"
+                aria-labelledby="tab-practice">
+                <h3>단계별 단어와 문장 학습</h3>
+                <p>나의 수준에 맞는 단어와 문장을 단게별로 나누어 학습할 수 있습니다.</p>
+            </div>
+
+            <div
+                id="feature-conversation"
+                class="panel"
+                role="tabpanel"
+                aria-labelledby="tab-conversation"
+                hidden>
+                <h3>원어민과 대화</h3>
+                <p>원어민과의 화상통화를 통해 대화를 진행할 수 있습니다.</p>
+            </div>
+
+            <div
+                id="feature-review"
+                class="panel"
+                role="tabpanel"
+                aria-labelledby="tab-review"
+                hidden>
+                <h3>게임을 통한 영어 복습</h3>
+                <p>게임을 통해 오늘 배운 영어를 복습합니다.</p>
+            </div>
         </section>
 
         <section id="steps">
@@ -69,6 +118,38 @@
                 <li>학습한 단어와 문장을 활용해 원어민과 실전 대화를 연습합니다.</li>
                 <li>다양한 게임형 영어 학습 콘텐츠를 통해 오늘 배운 단어와 문장을 복습합니다.</li>
             </ol>
+        </section>
+
+        <section id="event-practice">
+            <h2>원어민 화상통화 설정</h2>
+
+            <div class="event-grid">
+                <article class="event-card">
+                    <h3>화면 테마</h3>
+                    <button id="themeButton" type="button">다크 테마로 바꾸기</button>
+                </article>
+
+                <article class="event-card">
+                    <h3>학습자 정보</h3>
+                    <label for="nickname">학습자 이름</label>
+                    <input type="text" id="nickname" maxlength="10">
+                    <p id="nicknameCount" aria-live="polite">0 / 10</p>
+                </article>
+
+                <article class="event-card">
+                    <h3>카메라 활용 동의</h3>
+                    <label class="agree-row">
+                        <input type="checkbox" id="agreeCheck">
+                        원어민과의 화상통화를 위한 카메라 활용에 동의합니다.
+                    </label>
+                    <p id="agreeMessage" aria-live="polite">
+                        동의 후 화상통화를 시작할 수 있습니다.
+                    </p>
+                    <button id="startButton" type="button" disabled>
+                        화상통화 시작하기
+                    </button>
+                </article>
+            </div>
         </section>
 
         <section id="subscribe" class="subscribe-card">
