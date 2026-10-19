@@ -152,7 +152,7 @@
             </div>
         </section>
 
-        <dialog id="video-call-dialog" aria-label="video-call-title" aria-describedby="video-calldescription">
+        <dialog id="video-call-dialog" aria-labelledby="video-call-title" aria-describedby="video-call-description">
             <h2 id="video-call-title">카메라 활용 안내</h2>
             <p id="video-call-description">화상통화 기능을 활용할 수 있습니다. 지금은 조건만 설정하며 화상통화는 시작되지 않습니다.</p>
             <div class="dialog-actions">
@@ -164,9 +164,9 @@
         <section id="training-flow" class="training-flow" hidden>
             <h2>학습 설정</h2>
             <p class="progress" aria-label="설정 진행 단계">
-                <span class="progress_item">1 . 정보</span>
-                <span class="progress_item">2 . 조건</span>
-                <span class="progress_item">3 . 확인</span>
+                <span class="progress__item">1 . 정보</span>
+                <span class="progress__item">2 . 조건</span>
+                <span class="progress__item">3 . 확인</span>
             </p>
 
             <section class="step" data-step="1" hidden>
@@ -210,9 +210,45 @@
 
             <section class="step complete-step" data-step="4" hidden>
                 <h3>학습 설정이 완료되었습니다.</h3>
-                <p>설정한 내용을 확인했습니다. 필요하면 다시 설정할 수 있습니다.</p>
-                <button id="restart-button" type="button">다시 설정하기</button>
+                <p>설정한 내용으로 오늘의 단어 학습을 시작할 수 있습니다. 필요하면 다시 설정할 수 있습니다.</p>
+                <div class="step-actions">
+                    <button id="restart-button" type="button">다시 설정하기</button>
+                    <button id="quiz-start" type="button">오늘의 단어 학습 시작하기</button>
+                </div>
             </section>
+        </section>
+
+        <!-- 설정한 조건에 맞춰 단어와 문장을 직접 입력하며 학습 -->
+        <section id="word-quiz" class="word-quiz" hidden>
+            <h2 id="quiz-title">오늘의 단어 학습</h2>
+            <p id="quiz-info" class="quiz-info"></p>
+
+            <div id="quiz-play">
+                <p class="quiz-status">
+                    <span id="quiz-number">문제 1 / 1</span>
+                    <span id="quiz-score">맞힌 문제 0개</span>
+                </p>
+
+                <div class="quiz-card">
+                    <span id="quiz-type" class="quiz-type">단어</span>
+                    <p id="quiz-question" class="quiz-question"></p>
+                </div>
+
+                <form id="quiz-form" class="quiz-form">
+                    <label for="quiz-answer">한국어 뜻에 맞는 영어를 입력하세요</label>
+                    <input id="quiz-answer" type="text" autocomplete="off" spellcheck="false" aria-describedby="quiz-feedback">
+                    <button id="quiz-check" type="submit">정답 확인</button>
+                </form>
+                <p id="quiz-feedback" class="quiz-feedback" aria-live="polite"></p>
+
+                <button id="quiz-next" type="button" hidden>다음 문제</button>
+            </div>
+
+            <div id="quiz-result" hidden>
+                <h3>오늘의 학습 결과</h3>
+                <p id="result-score"></p>
+                <button id="result-back" type="button">학습 설정으로 돌아가기</button>
+            </div>
         </section>
 
         <section id="subscribe" class="subscribe-card">

@@ -361,6 +361,104 @@ body.dark .training-flow {
     border-color: #2d2e38;
 }
 
+.training-flow .step-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.word-quiz {
+    padding: 24px;
+    border: 1px solid #deddea;
+    border-radius: 24px;
+    background-color: #ffffff;
+}
+
+.word-quiz[hidden],
+.word-quiz [hidden] {
+    display: none;
+}
+
+.quiz-info {
+    color: #555763;
+}
+
+.quiz-status {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+}
+
+.quiz-card {
+    padding: 24px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background-color: #f4f3ff;
+    text-align: center;
+}
+
+.quiz-type {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    color: #ffffff;
+    background-color: #635bff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.quiz-question {
+    margin: 12px 0 0;
+    font-size: 28px;
+    font-weight: 800;
+    word-break: keep-all;
+}
+
+.quiz-form {
+    flex-wrap: wrap;
+}
+
+.quiz-form label {
+    width: 100%;
+    font-weight: 700;
+}
+
+#quiz-answer.has-error {
+    border-color: #9d243d;
+}
+
+#quiz-answer:disabled {
+    background-color: #f1f1f4;
+}
+
+.quiz-feedback {
+    min-height: 24px;
+    margin: 12px 0;
+    font-weight: 700;
+}
+
+.quiz-feedback.is-error {
+    padding: 12px;
+    border-radius: 10px;
+    color: #9d243d;
+    background-color: #fbeaee;
+}
+
+.quiz-feedback.is-success {
+    padding: 12px;
+    border-radius: 10px;
+    color: #245c3a;
+    background-color: #e7f7ed;
+}
+
+.word-quiz button:disabled {
+    color: #ffffff;
+    background-color: #a8a8b2;
+    cursor: not-allowed;
+}
+
 /* 웹페이지가 표시되는 가로 폭이 768px 이하일 때만 적용 */
 @media (max-width: 768px) {
     body {

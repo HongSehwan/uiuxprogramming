@@ -226,7 +226,7 @@ restartButton.addEventListener("click", () => {
     nicknameError.textContent = "";
     nicknameInput.classList.remove("has-error");
     durationRange.value = "1";
-    durationValues.value = "5분";
+    durationValue.value = "5분";
     sentenceOption.checked = false;
     sentenceOptions.hidden = true;
     document.querySelector("input[name=sentence-count][value='2']").checked = true;
@@ -234,4 +234,262 @@ restartButton.addEventListener("click", () => {
     summaryDuration.textContent = "";
     summarySentence.textContent = "";
     showStep(0);
+});
+
+// 학습 설정을 마친 학습자가 설정한 시간과 문장 옵션에 맞춰 한국어 뜻을 보고 영어 단어와 문장을 직접 입력하며 학습 진행
+const wordList = [
+    { korean: "사과", english: "apple" },
+    { korean: "친구", english: "friend" },
+    { korean: "학교", english: "school" },
+    { korean: "행복한", english: "happy" },
+    { korean: "물", english: "water" },
+    { korean: "책", english: "book" },
+    { korean: "가족", english: "family" },
+    { korean: "아침", english: "morning" },
+    { korean: "배우다", english: "learn" },
+    { korean: "말하다", english: "speak" }
+];
+
+const sentenceList = [
+    { korean: "만나서 반가워요.", english: "Nice to meet you." },
+    { korean: "저는 영어를 배우고 있어요.", english: "I am learning English." },
+    { korean: "다시 말해 주시겠어요?", english: "Can you say that again?" }
+];
+
+// 학습 시간에 따라 출제할 단어 수
+const wordCountByDuration = { "3": 3, "5": 5, "10": 8 };
+
+// 한 문제에 답을 입력할 수 있는 기회
+const maxTry = 3;
+
+const quizStart = document.querySelector("#quiz-start");
+const wordQuiz = document.querySelector("#word-quiz");
+const quizTitle = document.querySelector("#quiz-title");
+const quizInfo = document.querySelector("#quiz-info");
+const quizPlay = document.querySelector("#quiz-play");
+const quizNumber = document.querySelector("#quiz-number");
+const quizScore = document.querySelector("#quiz-score");
+const quizType = document.querySelector("#quiz-type");
+const quizQuestion = document.querySelector("#quiz-question");
+const quizForm = document.querySelector("#quiz-form");
+const quizAnswer = document.querySelector("#quiz-answer");
+const quizCheck = document.querySelector("#quiz-check");
+const quizFeedback = document.querySelector("#quiz-feedback");
+const quizNext = document.querySelector("#quiz-next");
+const quizResult = document.querySelector("#quiz-result");
+const resultScore = document.querySelector("#result-score");
+const resultBack = document.querySelector("#result-back");
+
+let quizQuestions = [];
+let quizIndex = 0;
+let correctCount = 0;
+let tryCount = 0;
+let isAnswered = false;
+
+// 설정한 학습 시간과 문장 옵션으로 문제 목록을 생성
+function makeQuizQuestions() {
+    const questions = [];
+    const wordCount = wordCountByDuration[formData.duration];
+
+    // 단어 순서를 랜덤으로 출제
+    const mixedWords = wordList.slice().sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < wordCount; i++) {
+        questions.push({
+            type: "단어",
+            korean: mixedWords[i].korean,
+            english: mixedWords[i].english
+        });
+    }
+
+    if (formData.sentence) {
+        const sentenceCount = Number(formData.sentenceCount);
+
+        for (let i = 0; i < sentenceCount; i++) {
+            questions.push({
+                type: "문장",
+                korean: sentenceList[i].korean,
+                english: sentenceList[i].english
+            });
+        }
+    }
+
+    return questions;
+}
+
+// 대소문자, 문장부호, 2칸 이상 띄어쓰기는 채점에서 제외
+function normalizeAnswer(text) {
+    let result = text.trim().toLowerCase();
+    result = result.replaceAll(".", "");
+    result = result.replaceAll(",", "");
+    result = result.replaceAll("?", "");
+    result = result.replaceAll("!", "");
+
+    while (result.includes("  ")) {
+        result = result.replaceAll("  ", " ");
+    }
+
+    return result.trim();
+}
+
+// 입력값에 한글이 섞여 있는지 확인
+function hasKorean(text) {
+    for (let i = 0; i < text.length; i++) {
+        const letter = text[i];
+
+        if ((letter >= "가" && letter <= "힣") || (letter >= "ㄱ" && letter <= "ㅣ")) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function showQuizFeedback(message, state) {
+    quizFeedback.textContent = message;
+    quizFeedback.classList.remove("is-error", "is-success");
+
+    if (state !== "") {
+        quizFeedback.classList.add(state);
+    }
+}
+
+function showQuestion() {
+    const question = quizQuestions[quizIndex];
+
+    quizNumber.textContent = "문제 " + (quizIndex + 1) + " / " + quizQuestions.length;
+    quizScore.textContent = "맞힌 문제 " + correctCount + "개";
+    quizType.textContent = question.type;
+    quizQuestion.textContent = question.korean;
+
+    quizAnswer.value = "";
+    quizAnswer.disabled = false;
+    quizAnswer.classList.remove("has-error");
+    quizAnswer.placeholder = question.type === "단어" ? "영어 단어를 입력하세요" : "영어 문장을 입력하세요";
+    quizCheck.disabled = false;
+    quizNext.hidden = true;
+    showQuizFeedback("", "");
+
+    tryCount = 0;
+    isAnswered = false;
+    quizAnswer.focus();
+}
+
+// 한 문제가 끝나면 입력을 막고 다음 문제 버튼을 노출
+function finishQuestion() {
+    isAnswered = true;
+    quizAnswer.disabled = true;
+    quizCheck.disabled = true;
+    quizScore.textContent = "맞힌 문제 " + correctCount + "개";
+
+    if (quizIndex === quizQuestions.length - 1) {
+        quizNext.textContent = "결과 보기";
+    } else {
+        quizNext.textContent = "다음 문제";
+    }
+
+    quizNext.hidden = false;
+    quizNext.focus();
+}
+
+function handleQuizSubmit(event) {
+    event.preventDefault();
+
+    if (isAnswered) return;
+
+    const question = quizQuestions[quizIndex];
+    const userAnswer = normalizeAnswer(quizAnswer.value);
+
+    // 입력값이 비어 있는 경우
+    if (userAnswer === "") {
+        showQuizFeedback("답이 비어 있습니다. 한국어 뜻에 맞는 영어를 입력한 뒤 '정답 확인'을 눌러 주세요.", "is-error");
+        quizAnswer.classList.add("has-error");
+        quizAnswer.focus();
+        return;
+    }
+
+    // 한글이 입력된 경우 (기회 차감 X)
+    if (hasKorean(userAnswer)) {
+        showQuizFeedback("한글이 입력되었습니다. 한/영 키를 눌러 영어로 바꾼 뒤 다시 입력해 주세요.", "is-error");
+        quizAnswer.classList.add("has-error");
+        quizAnswer.focus();
+        return;
+    }
+
+    // 정답인 경우
+    if (userAnswer === normalizeAnswer(question.english)) {
+        correctCount += 1;
+        quizAnswer.classList.remove("has-error");
+        showQuizFeedback("정답입니다! 잘 입력했어요. (" + question.english + ")", "is-success");
+        finishQuestion();
+        return;
+    }
+
+    // 오답인 경우
+    tryCount += 1;
+    quizAnswer.classList.add("has-error");
+
+    if (tryCount < maxTry) {
+        showQuizFeedback("정답이 아닙니다. 철자를 확인하고 다시 입력해 주세요. (남은 기회 " + (maxTry - tryCount) + "번)", "is-error");
+        quizAnswer.focus();
+        return;
+    }
+
+    showQuizFeedback("기회를 모두 사용했습니다. 정답은 '" + question.english + "'입니다. 아래 버튼을 눌러 계속하세요.", "is-error");
+    finishQuestion();
+}
+
+quizForm.addEventListener("submit", handleQuizSubmit);
+
+function showResult() {
+    quizPlay.hidden = true;
+    quizResult.hidden = false;
+    resultScore.textContent = formData.nickname + "님은 " + quizQuestions.length + "문제 중 " + correctCount + "문제를 맞혔습니다.";
+    resultBack.focus();
+}
+
+quizNext.addEventListener("click", () => {
+    quizIndex += 1;
+
+    if (quizIndex < quizQuestions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+});
+
+function startQuiz() {
+    quizQuestions = makeQuizQuestions();
+    quizIndex = 0;
+    correctCount = 0;
+
+    const wordCount = wordCountByDuration[formData.duration];
+    let infoText = "학습 시간 " + formData.duration + "분 설정에 맞춰 단어 " + wordCount + "개";
+
+    if (formData.sentence) {
+        infoText += "와 문장 " + formData.sentenceCount + "개";
+    }
+
+    infoText += "를 준비했습니다.";
+
+    quizTitle.textContent = formData.nickname + "님의 오늘의 단어 학습";
+    quizInfo.textContent = infoText;
+
+    trainingFlow.hidden = true;
+    wordQuiz.hidden = false;
+    quizPlay.hidden = false;
+    quizResult.hidden = true;
+    wordQuiz.scrollIntoView({ behavior: "smooth" });
+    showQuestion();
+}
+
+quizStart.addEventListener("click", startQuiz);
+
+// 결과 화면에서 설정 완료 화면으로 이동 (설정값 유지)
+resultBack.addEventListener("click", () => {
+    wordQuiz.hidden = true;
+    trainingFlow.hidden = false;
+    showStep(3);
+    trainingFlow.scrollIntoView({ behavior: "smooth" });
+    quizStart.focus();
 });
