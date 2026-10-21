@@ -240,8 +240,24 @@
                     <button id="quiz-check" type="submit">정답 확인</button>
                 </form>
                 <p id="quiz-feedback" class="quiz-feedback" aria-live="polite"></p>
+                <p id="quiz-hint" class="quiz-hint" aria-live="polite" hidden></p>
 
                 <button id="quiz-next" type="button" hidden>다음 문제</button>
+
+                <div class="quiz-actions">
+                    <button id="quiz-hint-button" class="sub-button" type="button">힌트 보기</button>
+                    <button id="quiz-skip" class="sub-button" type="button">이 문제 건너뛰기</button>
+                    <button id="quiz-quit" class="quit-button" type="button">학습 그만두기</button>
+                </div>
+            </div>
+
+            <div id="quiz-quit-box" class="quiz-quit-box" hidden>
+                <h3>학습을 그만둘까요?</h3>
+                <p>지금 그만두면 이번 학습 기록은 저장되지 않고 설정 완료 화면으로 돌아갑니다.</p>
+                <div class="quiz-actions">
+                    <button id="quit-cancel" class="sub-button" type="button">계속 학습하기</button>
+                    <button id="quit-confirm" class="quit-button" type="button">그만두고 돌아가기</button>
+                </div>
             </div>
 
             <div id="quiz-result" hidden>

@@ -456,7 +456,110 @@ body.dark .training-flow {
 .word-quiz button:disabled {
     color: #ffffff;
     background-color: #a8a8b2;
+    border-color: #a8a8b2;
     cursor: not-allowed;
+}
+
+.quiz-feedback.is-skip {
+    padding: 12px;
+    border-radius: 10px;
+    color: #555763;
+    background-color: #ecebf2;
+}
+
+.word-quiz .quiz-hint {
+    padding: 12px;
+    border-radius: 10px;
+    color: #2f4f9e;
+    background-color: #eef2fb;
+    font-weight: 700;
+}
+
+.quiz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.sub-button {
+    color: #2f4f9e;
+    background-color: #ffffff;
+    border: 1px solid #2f4f9e;
+}
+
+.sub-button:hover {
+    color: #ffffff;
+    background-color: #2f4f9e;
+}
+
+.quit-button {
+    margin-left: auto;
+    color: #9d243d;
+    background-color: #ffffff;
+    border: 1px solid #9d243d;
+}
+
+.quit-button:hover {
+    color: #ffffff;
+    background-color: #9d243d;
+}
+
+.quiz-quit-box {
+    padding: 24px;
+    border: 2px solid #9d243d;
+    border-radius: 12px;
+    background-color: #fffafb;
+}
+
+.quiz-quit-box h3 {
+    margin-top: 0;
+    color: #9d243d;
+}
+
+body.dark .word-quiz {
+    background-color: #50515f;
+    border-color: #2d2e38;
+}
+
+body.dark .quiz-card,
+body.dark .quiz-quit-box {
+    background-color: #2d2e38;
+}
+
+body.dark .quiz-info {
+    color: #f4f4f8;
+}
+
+body.dark .sub-button {
+    color: #b9b5ff;
+    background-color: #2d2e38;
+    border-color: #b9b5ff;
+}
+
+body.dark .quit-button {
+    color: #ffb3c1;
+    background-color: #2d2e38;
+    border-color: #ffb3c1;
+}
+
+body.dark .quiz-quit-box h3 {
+    color: #ffb3c1;
+}
+
+body.dark #quiz-answer:disabled {
+    color: #d8d8e2;
+    background-color: #3a3b47;
+}
+
+body.dark .word-quiz h2 {
+    color: #b9b5ff;
+}
+
+body.dark .word-quiz button:disabled {
+    color: #d8d8e2;
+    background-color: #6b6c78;
+    border-color: #6b6c78;
 }
 
 /* 웹페이지가 표시되는 가로 폭이 768px 이하일 때만 적용 */
@@ -535,4 +638,34 @@ body.dark .training-flow {
     .training-flow .step-actions {flex-direction: column-reverse;}
     .training-flow input[type="checkbox"],
     .training-flow input[type="radio"] {width: auto;}
+
+    /* 오늘의 단어 학습: 모바일에서는 정보와 버튼을 한 열로 배치 */
+    .word-quiz {
+        padding: 20px;
+    }
+
+    .quiz-status {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .quiz-card {
+        padding: 20px 16px;
+    }
+
+    .quiz-question {
+        font-size: 24px;
+    }
+
+    .quiz-actions {
+        flex-direction: column;
+    }
+
+    .quit-button {
+        margin-left: 0;
+    }
+
+    .quiz-quit-box {
+        padding: 20px;
+    }
 }

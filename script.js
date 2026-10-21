@@ -279,12 +279,21 @@ const quizNext = document.querySelector("#quiz-next");
 const quizResult = document.querySelector("#quiz-result");
 const resultScore = document.querySelector("#result-score");
 const resultBack = document.querySelector("#result-back");
+const quizHint = document.querySelector("#quiz-hint");
+const quizHintButton = document.querySelector("#quiz-hint-button");
+const quizSkip = document.querySelector("#quiz-skip");
+const quizQuit = document.querySelector("#quiz-quit");
+const quizQuitBox = document.querySelector("#quiz-quit-box");
+const quitCancel = document.querySelector("#quit-cancel");
+const quitConfirm = document.querySelector("#quit-confirm");
 
 let quizQuestions = [];
 let quizIndex = 0;
 let correctCount = 0;
 let tryCount = 0;
 let isAnswered = false;
+let hintCount = 0;
+let skipCount = 0;
 
 // 설정한 학습 시간과 문장 옵션으로 문제 목록을 생성
 function makeQuizQuestions() {
@@ -347,7 +356,7 @@ function hasKorean(text) {
 
 function showQuizFeedback(message, state) {
     quizFeedback.textContent = message;
-    quizFeedback.classList.remove("is-error", "is-success");
+    quizFeedback.classList.remove("is-error", "is-success", "is-skip");
 
     if (state !== "") {
         quizFeedback.classList.add(state);
@@ -368,6 +377,10 @@ function showQuestion() {
     quizAnswer.placeholder = question.type === "단어" ? "영어 단어를 입력하세요" : "영어 문장을 입력하세요";
     quizCheck.disabled = false;
     quizNext.hidden = true;
+    quizHint.hidden = true;
+    quizHint.textContent = "";
+    quizHintButton.disabled = false;
+    quizSkip.disabled = false;
     showQuizFeedback("", "");
 
     tryCount = 0;
@@ -380,6 +393,8 @@ function finishQuestion() {
     isAnswered = true;
     quizAnswer.disabled = true;
     quizCheck.disabled = true;
+    quizHintButton.disabled = true;
+    quizSkip.disabled = true;
     quizScore.textContent = "맞힌 문제 " + correctCount + "개";
 
     if (quizIndex === quizQuestions.length - 1) {
@@ -444,7 +459,7 @@ quizForm.addEventListener("submit", handleQuizSubmit);
 function showResult() {
     quizPlay.hidden = true;
     quizResult.hidden = false;
-    resultScore.textContent = formData.nickname + "님은 " + quizQuestions.length + "문제 중 " + correctCount + "문제를 맞혔습니다.";
+    resultScore.textContent = formData.nickname + "님은 " + quizQuestions.length + "문제 중 " + correctCount + "문제를 맞혔습니다. (힌트 사용 " + hintCount + "번, 건너뛴 문제 " + skipCount + "개)";
     resultBack.focus();
 }
 
@@ -462,6 +477,8 @@ function startQuiz() {
     quizQuestions = makeQuizQuestions();
     quizIndex = 0;
     correctCount = 0;
+    hintCount = 0;
+    skipCount = 0;
 
     const wordCount = wordCountByDuration[formData.duration];
     let infoText = "학습 시간 " + formData.duration + "분 설정에 맞춰 단어 " + wordCount + "개";
@@ -479,17 +496,84 @@ function startQuiz() {
     wordQuiz.hidden = false;
     quizPlay.hidden = false;
     quizResult.hidden = true;
+    quizQuitBox.hidden = true;
     wordQuiz.scrollIntoView({ behavior: "smooth" });
     showQuestion();
 }
 
 quizStart.addEventListener("click", startQuiz);
 
-// 결과 화면에서 설정 완료 화면으로 이동 (설정값 유지)
-resultBack.addEventListener("click", () => {
+// 학습 화면을 닫고 설정 완료 화면으로 이동 (설정값 유지)
+function backToSettings() {
     wordQuiz.hidden = true;
     trainingFlow.hidden = false;
     showStep(3);
     trainingFlow.scrollIntoView({ behavior: "smooth" });
     quizStart.focus();
+}
+
+resultBack.addEventListener("click", backToSettings);
+
+// 힌트 보기: 단어는 첫 글자와 글자 수, 문장은 첫 단어와 단어 수를 노출
+quizHintButton.addEventListener("click", () => {
+    if (isAnswered) return;
+
+    const question = quizQuestions[quizIndex];
+
+    if (question.type === "단어") {
+        quizHint.textContent = "힌트: 첫 글자는 '" + question.english[0] + "'이고, 모두 " + question.english.length + "글자입니다.";
+    } else {
+        const words = question.english.split(" ");
+        quizHint.textContent = "힌트: 첫 단어는 '" + words[0] + "'이고, 모두 " + words.length + "단어입니다.";
+    }
+
+    hintCount += 1;
+    quizHint.hidden = false;
+    quizHintButton.disabled = true;
+    quizAnswer.focus();
+});
+
+// 건너뛰기: 정답을 보여 주고 틀린 문제로 처리
+quizSkip.addEventListener("click", () => {
+    if (isAnswered) return;
+
+    const question = quizQuestions[quizIndex];
+
+    skipCount += 1;
+    quizAnswer.classList.remove("has-error");
+    showQuizFeedback("이 문제를 건너뛰었습니다. 정답은 '" + question.english + "'입니다. 아래 버튼을 눌러 계속하세요.", "is-skip");
+    finishQuestion();
+});
+
+// 그만두기: 바로 종료하지 않고 확인 창 노출
+quizQuit.addEventListener("click", () => {
+    quizPlay.hidden = true;
+    quizQuitBox.hidden = false;
+    quitCancel.focus();
+});
+
+// 계속 학습하기: 입력하던 답과 진행 상황 유지
+quitCancel.addEventListener("click", () => {
+    quizQuitBox.hidden = true;
+    quizPlay.hidden = false;
+
+    if (isAnswered) {
+        quizNext.focus();
+    } else {
+        quizAnswer.focus();
+    }
+});
+
+// 그만두고 돌아가기: 이번 학습 상태를 초기화하고 설정 완료 화면으로 이동
+quitConfirm.addEventListener("click", () => {
+    quizQuestions = [];
+    quizIndex = 0;
+    correctCount = 0;
+    tryCount = 0;
+    hintCount = 0;
+    skipCount = 0;
+    isAnswered = false;
+    quizAnswer.value = "";
+    quizQuitBox.hidden = true;
+    backToSettings();
 });
