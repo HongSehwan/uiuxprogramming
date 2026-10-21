@@ -179,9 +179,9 @@
 
             <section class="step" data-step="2" hidden>
                 <h3>학습 조건을 선택해 주세요.</h3>
-                <label for="duration-range">학습 시간</label>
-                <input id="duration-range" type="range" min="0" max="2" step="1" value="1">
-                <output id="duration-value" for="duration-range">5분</output>
+                <label for="word-count-range">학습 단어 수</label>
+                <input id="word-count-range" type="range" min="0" max="2" step="1" value="1">
+                <output id="word-count-value" for="word-count-range">5개</output>
                 <label><input type="checkbox" id="sentence-option">문장 포함</label>
                 <fieldset id="sentence-options" hidden>
                     <legend>문장 수</legend>
@@ -199,7 +199,7 @@
                 <h3>입력한 내용을 확인해 주세요.</h3>
                 <div class="summary-list">
                     <div><span>닉네임</span><strong id="summary-nickname"></strong></div>
-                    <div><span>학습 시간</span><strong id="summary-duration"></strong></div>
+                    <div><span>학습 단어 수</span><strong id="summary-word-count"></strong></div>
                     <div><span>문장 학습</span><strong id="summary-sentence"></strong></div>
                 </div>
                 <div class="step-actions">
@@ -263,7 +263,18 @@
             <div id="quiz-result" hidden>
                 <h3>오늘의 학습 결과</h3>
                 <p id="result-score"></p>
-                <button id="result-back" type="button">학습 설정으로 돌아가기</button>
+
+                <div id="wrong-box">
+                    <p class="wrong-title">다시 볼 문제</p>
+                    <ul id="wrong-list" class="wrong-list"></ul>
+                </div>
+                <p id="wrong-empty" class="wrong-empty" hidden>틀린 문제가 없습니다. 모두 맞혔어요! 새 단어로 처음부터 다시 풀거나 학습 설정으로 돌아갈 수 있습니다.</p>
+
+                <div class="quiz-actions">
+                    <button id="retry-wrong" type="button">틀린 문제만 다시 풀기</button>
+                    <button id="retry-all" class="sub-button" type="button">처음부터 다시 풀기</button>
+                    <button id="result-back" class="sub-button" type="button">학습 설정으로 돌아가기</button>
+                </div>
             </div>
         </section>
 

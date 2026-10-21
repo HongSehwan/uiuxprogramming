@@ -119,8 +119,8 @@ const progressItems = trainingFlow.querySelectorAll(".progress__item");
 const nicknameInput = document.querySelector("#nickname");
 const nicknameError = document.querySelector("#nickname-error");
 const nicknameNext = document.querySelector("#nickname-next");
-const durationRange = document.querySelector("#duration-range");
-const durationValue = document.querySelector("#duration-value");
+const wordCountRange = document.querySelector("#word-count-range");
+const wordCountValue = document.querySelector("#word-count-value");
 const sentenceOption = document.querySelector("#sentence-option");
 const sentenceOptions = document.querySelector("#sentence-options");
 const optionPrev = document.querySelector("#option-prev");
@@ -129,12 +129,12 @@ const summaryPrev = document.querySelector("#summary-prev");
 const finishButton = document.querySelector("#finish-button");
 const restartButton = document.querySelector("#restart-button");
 const summaryNickname = document.querySelector("#summary-nickname");
-const summaryDuration = document.querySelector("#summary-duration");
+const summaryWordCount = document.querySelector("#summary-word-count");
 const summarySentence = document.querySelector("#summary-sentence");
-const durationValues = ["3", "5", "10"];
+const wordCountValues = ["3", "5", "10"];
 
 const formData = {
-    nickname: "", duration: "5", sentence: false, sentenceCount: "2"
+    nickname: "", wordCount: "5", sentence: false, sentenceCount: "2"
 }
 
 function showStep(index) {
@@ -151,6 +151,7 @@ const videoCallConfirm = document.querySelector("#video-call-confirm");
 function revokeVideoCallAgreement() {
     agreeCheck.checked = false;
     trainingFlow.hidden = true;
+    resetQuiz();
     handleAgreeChange();
     agreeCheck.focus();
 }
@@ -169,6 +170,7 @@ videoCallDialog.addEventListener("cancel", revokeVideoCallAgreement);
 videoCallConfirm.addEventListener("click", () => {
     if(!agreeCheck.checked) return;
     videoCallDialog.close();
+    resetQuiz();
     trainingFlow.hidden = false;
     showStep(0);
     trainingFlow.scrollIntoView({ behavior: "smooth" });
@@ -195,8 +197,8 @@ nicknameNext.addEventListener("click", () => {
     showStep(1);
 });
 
-durationRange.addEventListener("input", () => {
-    durationValue.value = durationValues[durationRange.value] + "분";
+wordCountRange.addEventListener("input", () => {
+    wordCountValue.value = wordCountValues[wordCountRange.value] + "개";
 });
 
 sentenceOption.addEventListener("change", () => {
@@ -205,12 +207,12 @@ sentenceOption.addEventListener("change", () => {
 
 optionPrev.addEventListener("click", () => showStep(0));
 optionNext.addEventListener("click", () => {
-    formData.duration = durationValues[durationRange.value];
+    formData.wordCount = wordCountValues[wordCountRange.value];
     formData.sentence = sentenceOption.checked;
     const count = document.querySelector("input[name=sentence-count]:checked");
     formData.sentenceCount = count.value;
     summaryNickname.textContent = formData.nickname;
-    summaryDuration.textContent = formData.duration + "분";
+    summaryWordCount.textContent = formData.wordCount + "개";
     summarySentence.textContent = formData.sentence ? formData.sentenceCount + "개 포함" : "미포함";
     showStep(2);
 });
@@ -219,24 +221,25 @@ summaryPrev.addEventListener("click", () => showStep(1));
 finishButton.addEventListener("click", () => showStep(3));
 restartButton.addEventListener("click", () => {
     formData.nickname = "";
-    formData.duration = "5";
+    formData.wordCount = "5";
     formData.sentence = false;
     formData.sentenceCount = "2";
     nicknameInput.value = "";
     nicknameError.textContent = "";
     nicknameInput.classList.remove("has-error");
-    durationRange.value = "1";
-    durationValue.value = "5분";
+    wordCountRange.value = "1";
+    wordCountValue.value = "5개";
     sentenceOption.checked = false;
     sentenceOptions.hidden = true;
     document.querySelector("input[name=sentence-count][value='2']").checked = true;
     summaryNickname.textContent = "";
-    summaryDuration.textContent = "";
+    summaryWordCount.textContent = "";
     summarySentence.textContent = "";
+    resetQuiz();
     showStep(0);
 });
 
-// 학습 설정을 마친 학습자가 설정한 시간과 문장 옵션에 맞춰 한국어 뜻을 보고 영어 단어와 문장을 직접 입력하며 학습 진행
+// 학습 설정을 마친 학습자가 설정한 단어 수와 문장 옵션에 맞춰 한국어 뜻을 보고 영어 단어와 문장을 직접 입력하며 학습 진행
 const wordList = [
     { korean: "사과", english: "apple" },
     { korean: "친구", english: "friend" },
@@ -255,9 +258,6 @@ const sentenceList = [
     { korean: "저는 영어를 배우고 있어요.", english: "I am learning English." },
     { korean: "다시 말해 주시겠어요?", english: "Can you say that again?" }
 ];
-
-// 학습 시간에 따라 출제할 단어 수
-const wordCountByDuration = { "3": 3, "5": 5, "10": 8 };
 
 // 한 문제에 답을 입력할 수 있는 기회
 const maxTry = 3;
@@ -286,6 +286,11 @@ const quizQuit = document.querySelector("#quiz-quit");
 const quizQuitBox = document.querySelector("#quiz-quit-box");
 const quitCancel = document.querySelector("#quit-cancel");
 const quitConfirm = document.querySelector("#quit-confirm");
+const wrongBox = document.querySelector("#wrong-box");
+const wrongList = document.querySelector("#wrong-list");
+const wrongEmpty = document.querySelector("#wrong-empty");
+const retryWrong = document.querySelector("#retry-wrong");
+const retryAll = document.querySelector("#retry-all");
 
 let quizQuestions = [];
 let quizIndex = 0;
@@ -294,11 +299,12 @@ let tryCount = 0;
 let isAnswered = false;
 let hintCount = 0;
 let skipCount = 0;
+let wrongQuestions = [];
 
-// 설정한 학습 시간과 문장 옵션으로 문제 목록을 생성
+// 설정한 학습 단어 수와 문장 옵션으로 문제 목록을 생성
 function makeQuizQuestions() {
     const questions = [];
-    const wordCount = wordCountByDuration[formData.duration];
+    const wordCount = Number(formData.wordCount);
 
     // 단어 순서를 랜덤으로 출제
     const mixedWords = wordList.slice().sort(() => Math.random() - 0.5);
@@ -450,6 +456,7 @@ function handleQuizSubmit(event) {
         return;
     }
 
+    wrongQuestions.push(question);
     showQuizFeedback("기회를 모두 사용했습니다. 정답은 '" + question.english + "'입니다. 아래 버튼을 눌러 계속하세요.", "is-error");
     finishQuestion();
 }
@@ -460,7 +467,30 @@ function showResult() {
     quizPlay.hidden = true;
     quizResult.hidden = false;
     resultScore.textContent = formData.nickname + "님은 " + quizQuestions.length + "문제 중 " + correctCount + "문제를 맞혔습니다. (힌트 사용 " + hintCount + "번, 건너뛴 문제 " + skipCount + "개)";
-    resultBack.focus();
+
+    // 이전 결과 목록을 비우고 이번에 틀린 문제로 다시 생성
+    wrongList.innerHTML = "";
+
+    // 틀린 문제가 없는 경우: 목록 대신 안내 문구 노출
+    if (wrongQuestions.length === 0) {
+        wrongBox.hidden = true;
+        wrongEmpty.hidden = false;
+        retryWrong.hidden = true;
+        retryAll.focus();
+        return;
+    }
+
+    for (let i = 0; i < wrongQuestions.length; i++) {
+        const item = document.createElement("li");
+        item.textContent = "[" + wrongQuestions[i].type + "] " + wrongQuestions[i].korean + " → " + wrongQuestions[i].english;
+        wrongList.appendChild(item);
+    }
+
+    wrongBox.hidden = false;
+    wrongEmpty.hidden = true;
+    retryWrong.hidden = false;
+    retryWrong.textContent = "틀린 문제 " + wrongQuestions.length + "개만 다시 풀기";
+    retryWrong.focus();
 }
 
 quizNext.addEventListener("click", () => {
@@ -473,21 +503,14 @@ quizNext.addEventListener("click", () => {
     }
 });
 
-function startQuiz() {
-    quizQuestions = makeQuizQuestions();
+// 문제 목록과 안내 문구를 받아 학습 화면을 처음 상태로 열기
+function openQuiz(questions, infoText) {
+    quizQuestions = questions;
     quizIndex = 0;
     correctCount = 0;
     hintCount = 0;
     skipCount = 0;
-
-    const wordCount = wordCountByDuration[formData.duration];
-    let infoText = "학습 시간 " + formData.duration + "분 설정에 맞춰 단어 " + wordCount + "개";
-
-    if (formData.sentence) {
-        infoText += "와 문장 " + formData.sentenceCount + "개";
-    }
-
-    infoText += "를 준비했습니다.";
+    wrongQuestions = [];
 
     quizTitle.textContent = formData.nickname + "님의 오늘의 단어 학습";
     quizInfo.textContent = infoText;
@@ -499,6 +522,18 @@ function startQuiz() {
     quizQuitBox.hidden = true;
     wordQuiz.scrollIntoView({ behavior: "smooth" });
     showQuestion();
+}
+
+function startQuiz() {
+    let infoText = "설정에 맞춰 단어 " + formData.wordCount + "개";
+
+    if (formData.sentence) {
+        infoText += "와 문장 " + formData.sentenceCount + "개";
+    }
+
+    infoText += "를 준비했습니다.";
+
+    openQuiz(makeQuizQuestions(), infoText);
 }
 
 quizStart.addEventListener("click", startQuiz);
@@ -540,6 +575,7 @@ quizSkip.addEventListener("click", () => {
     const question = quizQuestions[quizIndex];
 
     skipCount += 1;
+    wrongQuestions.push(question);
     quizAnswer.classList.remove("has-error");
     showQuizFeedback("이 문제를 건너뛰었습니다. 정답은 '" + question.english + "'입니다. 아래 버튼을 눌러 계속하세요.", "is-skip");
     finishQuestion();
@@ -566,14 +602,34 @@ quitCancel.addEventListener("click", () => {
 
 // 그만두고 돌아가기: 이번 학습 상태를 초기화하고 설정 완료 화면으로 이동
 quitConfirm.addEventListener("click", () => {
+    resetQuiz();
+    backToSettings();
+});
+
+// 학습 상태를 모두 초기화하고 학습 화면 숨김 (다시 설정하기, 그만두기 등에서 사용)
+function resetQuiz() {
     quizQuestions = [];
     quizIndex = 0;
     correctCount = 0;
     tryCount = 0;
     hintCount = 0;
     skipCount = 0;
+    wrongQuestions = [];
     isAnswered = false;
     quizAnswer.value = "";
+    wrongList.innerHTML = "";
     quizQuitBox.hidden = true;
-    backToSettings();
+    quizResult.hidden = true;
+    wordQuiz.hidden = true;
+}
+
+// 틀린 문제만 다시 풀기: 이번 결과에서 틀린 문제로만 새 학습 시작
+retryWrong.addEventListener("click", () => {
+    if (wrongQuestions.length === 0) return;
+
+    const retryQuestions = wrongQuestions.slice();
+    openQuiz(retryQuestions, "틀린 문제 " + retryQuestions.length + "개를 다시 풀어 봅니다. 이번에는 꼭 맞혀 보세요!");
 });
+
+// 처음부터 다시 풀기: 같은 설정으로 새 단어를 섞어서 다시 시작
+retryAll.addEventListener("click", startQuiz);
