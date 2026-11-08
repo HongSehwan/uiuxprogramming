@@ -118,11 +118,13 @@ const flowSteps = trainingFlow.querySelectorAll(".step");
 const progressItems = trainingFlow.querySelectorAll(".progress__item");
 const nicknameInput = document.querySelector("#nickname");
 const nicknameError = document.querySelector("#nickname-error");
+const nicknameCount = document.querySelector("#nickname-count");
 const nicknameNext = document.querySelector("#nickname-next");
 const wordCountRange = document.querySelector("#word-count-range");
 const wordCountValue = document.querySelector("#word-count-value");
 const sentenceOption = document.querySelector("#sentence-option");
 const sentenceOptions = document.querySelector("#sentence-options");
+const sentenceRadios = document.querySelectorAll("input[name=sentence-count]");
 const optionPrev = document.querySelector("#option-prev");
 const optionNext = document.querySelector("#option-next");
 const summaryPrev = document.querySelector("#summary-prev");
@@ -180,7 +182,7 @@ videoCallConfirm.addEventListener("click", () => {
 function validateNickname() {
     const value = nicknameInput.value.trim();
     if (!value) {
-        nicknameError.textContent = "닉네임을 입력해 주세요.";
+        nicknameError.textContent = "오류: 닉네임이 비어 있습니다. 1자 이상 10자 이하로 입력해 주세요.";
         nicknameInput.classList.add("has-error");
         nicknameInput.focus();
         return false;
@@ -192,6 +194,12 @@ function validateNickname() {
     return true;
 }
 
+// 글자 수 표시, 오류가 있던 칸은 고치면 바로 오류 해제
+nicknameInput.addEventListener("input", () => {
+    nicknameCount.textContent = nicknameInput.value.length + " / 10자";
+    if (nicknameInput.classList.contains("has-error")) validateNickname();
+});
+
 nicknameNext.addEventListener("click", () => {
     if (!validateNickname()) return;
     showStep(1);
@@ -201,9 +209,18 @@ wordCountRange.addEventListener("input", () => {
     wordCountValue.value = wordCountValues[wordCountRange.value] + "개";
 });
 
-sentenceOption.addEventListener("change", () => {
-   sentenceOptions.hidden =! sentenceOption.checked;
-});
+// 문장 포함을 체크하면 문장 수 영역을 보여 주고 선택 가능, 해제하면 숨기고 disabled
+function updateSentenceOptions() {
+    const checked = sentenceOption.checked;
+
+    sentenceOptions.hidden = !checked;
+    sentenceOption.setAttribute("aria-expanded", checked ? "true" : "false");
+    sentenceRadios.forEach((radio) => {
+        radio.disabled = !checked;
+    });
+}
+
+sentenceOption.addEventListener("change", updateSentenceOptions);
 
 optionPrev.addEventListener("click", () => showStep(0));
 optionNext.addEventListener("click", () => {
@@ -227,10 +244,11 @@ restartButton.addEventListener("click", () => {
     nicknameInput.value = "";
     nicknameError.textContent = "";
     nicknameInput.classList.remove("has-error");
+    nicknameCount.textContent = "0 / 10자";
     wordCountRange.value = "1";
     wordCountValue.value = "5개";
     sentenceOption.checked = false;
-    sentenceOptions.hidden = true;
+    updateSentenceOptions();
     document.querySelector("input[name=sentence-count][value='2']").checked = true;
     summaryNickname.textContent = "";
     summaryWordCount.textContent = "";
@@ -633,3 +651,312 @@ retryWrong.addEventListener("click", () => {
 
 // 처음부터 다시 풀기: 같은 설정으로 새 단어를 섞어서 다시 시작
 retryAll.addEventListener("click", startQuiz);
+
+// ===== 원어민 화상수업 예약 폼 =====
+const reserveForm = document.querySelector("#reserve-form");
+const reserveName = document.querySelector("#reserve-name");
+const reserveNameCount = document.querySelector("#reserve-name-count");
+const reserveNameError = document.querySelector("#reserve-name-error");
+const reserveDate = document.querySelector("#reserve-date");
+const reserveDateError = document.querySelector("#reserve-date-error");
+const reserveTime = document.querySelector("#reserve-time");
+const reserveTimeError = document.querySelector("#reserve-time-error");
+const reserveMessage = document.querySelector("#reserve-message");
+const reserveMessageCount = document.querySelector("#reserve-message-count");
+const reserveMessageError = document.querySelector("#reserve-message-error");
+const feedbackCheck = document.querySelector("#feedback-check");
+const feedbackArea = document.querySelector("#feedback-area");
+const feedbackEmail = document.querySelector("#feedback-email");
+const feedbackEmailError = document.querySelector("#feedback-email-error");
+const reserveStatus = document.querySelector("#reserve-status");
+const reserveSubmit = document.querySelector("#reserve-submit");
+const reserveReset = document.querySelector("#reserve-reset");
+const reserveList = document.querySelector("#reserve-list");
+const reserveEmpty = document.querySelector("#reserve-empty");
+
+const messageMinLength = 10;
+let isReserving = false;
+
+function showFieldError(input, errorBox, message) {
+    errorBox.textContent = message;
+    input.classList.add("has-error");
+    input.setAttribute("aria-invalid", "true");
+}
+
+function clearFieldError(input, errorBox) {
+    errorBox.textContent = "";
+    input.classList.remove("has-error");
+    input.removeAttribute("aria-invalid");
+}
+
+function showReserveStatus(message, state) {
+    reserveStatus.textContent = message;
+    reserveStatus.classList.remove("is-error", "is-success", "is-loading");
+
+    if (state !== "") {
+        reserveStatus.classList.add(state);
+    }
+}
+
+// 오늘 날짜를 "YYYY-MM-DD" 형태로 만들기
+function getToday() {
+    const now = new Date();
+    let month = now.getMonth() + 1;
+    let day = now.getDate();
+
+    if (month < 10) month = "0" + month;
+    if (day < 10) day = "0" + day;
+
+    return now.getFullYear() + "-" + month + "-" + day;
+}
+
+reserveDate.min = getToday();
+
+function validateReserveName() {
+    const value = reserveName.value.trim();
+
+    if (value === "") {
+        showFieldError(reserveName, reserveNameError, "오류: 이름이 비어 있습니다. 예약자 이름을 입력해 주세요.");
+        return false;
+    }
+
+    if (value.length < 2) {
+        showFieldError(reserveName, reserveNameError, "오류: 이름이 너무 짧습니다. 2자 이상 입력해 주세요.");
+        return false;
+    }
+
+    clearFieldError(reserveName, reserveNameError);
+    return true;
+}
+
+function validateReserveDate() {
+    if (reserveDate.value === "") {
+        showFieldError(reserveDate, reserveDateError, "오류: 수업 날짜를 선택해 주세요.");
+        return false;
+    }
+
+    if (reserveDate.value < getToday()) {
+        showFieldError(reserveDate, reserveDateError, "오류: 지난 날짜는 예약할 수 없습니다. 오늘 이후의 날짜를 선택해 주세요.");
+        return false;
+    }
+
+    clearFieldError(reserveDate, reserveDateError);
+    return true;
+}
+
+function validateReserveTime() {
+    if (reserveTime.value === "") {
+        showFieldError(reserveTime, reserveTimeError, "오류: 수업 시간을 선택해 주세요.");
+        return false;
+    }
+
+    clearFieldError(reserveTime, reserveTimeError);
+    return true;
+}
+
+function validateReserveMessage() {
+    const length = reserveMessage.value.trim().length;
+
+    if (length < messageMinLength) {
+        showFieldError(reserveMessage, reserveMessageError, "오류: 선생님께 전할 말을 " + messageMinLength + "자 이상 적어 주세요. (" + (messageMinLength - length) + "자 더 필요)");
+        return false;
+    }
+
+    clearFieldError(reserveMessage, reserveMessageError);
+    return true;
+}
+
+// 피드백 받기를 선택하지 않았으면 검사하지 않음
+function validateFeedbackEmail() {
+    if (!feedbackCheck.checked) return true;
+
+    const value = feedbackEmail.value.trim();
+
+    if (value === "") {
+        showFieldError(feedbackEmail, feedbackEmailError, "오류: 피드백 받을 이메일을 입력해 주세요.");
+        return false;
+    }
+
+    if (!value.includes("@") || !value.includes(".")) {
+        showFieldError(feedbackEmail, feedbackEmailError, "오류: 이메일 형식이 아닙니다. name@example.com 처럼 입력해 주세요.");
+        return false;
+    }
+
+    clearFieldError(feedbackEmail, feedbackEmailError);
+    return true;
+}
+
+// 입력하는 동안 글자 수와 조건 충족 여부를 문구로 표시
+function updateNameCount() {
+    reserveNameCount.textContent = reserveName.value.length + " / 10자";
+}
+
+function updateMessageCount() {
+    const length = reserveMessage.value.trim().length;
+
+    if (length >= messageMinLength) {
+        reserveMessageCount.textContent = reserveMessage.value.length + " / 200자 (조건 충족)";
+        reserveMessageCount.classList.add("is-ok");
+    } else {
+        reserveMessageCount.textContent = reserveMessage.value.length + " / 200자 (" + (messageMinLength - length) + "자 더 필요)";
+        reserveMessageCount.classList.remove("is-ok");
+    }
+}
+
+// 오류가 표시된 칸은 입력할 때마다 다시 검사해서 고치면 바로 오류 해제
+reserveName.addEventListener("input", () => {
+    updateNameCount();
+    if (reserveName.classList.contains("has-error")) validateReserveName();
+});
+
+reserveMessage.addEventListener("input", () => {
+    updateMessageCount();
+    if (reserveMessage.classList.contains("has-error")) validateReserveMessage();
+});
+
+feedbackEmail.addEventListener("input", () => {
+    if (feedbackEmail.classList.contains("has-error")) validateFeedbackEmail();
+});
+
+reserveDate.addEventListener("change", validateReserveDate);
+reserveTime.addEventListener("change", validateReserveTime);
+
+// 체크하면 이메일 칸을 보여 주고 사용 가능, 해제하면 숨기고 disabled
+feedbackCheck.addEventListener("change", () => {
+    const checked = feedbackCheck.checked;
+
+    feedbackArea.hidden = !checked;
+    feedbackEmail.disabled = !checked;
+    feedbackCheck.setAttribute("aria-expanded", checked ? "true" : "false");
+
+    if (checked) {
+        feedbackEmail.focus();
+    } else {
+        feedbackEmail.value = "";
+        clearFieldError(feedbackEmail, feedbackEmailError);
+    }
+});
+
+// localStorage에 저장된 예약 목록 불러오기
+function loadReservations() {
+    const saved = localStorage.getItem("reservations");
+
+    if (saved === null) return [];
+    return JSON.parse(saved);
+}
+
+function renderReservations() {
+    const reservations = loadReservations();
+    reserveList.innerHTML = "";
+
+    for (let i = 0; i < reservations.length; i++) {
+        const item = document.createElement("li");
+        const r = reservations[i];
+        item.textContent = r.date + " " + r.time + " · " + r.topic + " · " + r.name + "님";
+        reserveList.appendChild(item);
+    }
+
+    reserveEmpty.hidden = reservations.length > 0;
+}
+
+function finishReserving() {
+    isReserving = false;
+    reserveSubmit.disabled = false;
+    reserveReset.disabled = false;
+    reserveSubmit.textContent = "예약 신청하기";
+}
+
+function saveReservation() {
+    const topic = reserveForm.querySelector("input[name=topic]:checked").value;
+    const newReservation = {
+        name: reserveName.value.trim(),
+        date: reserveDate.value,
+        time: reserveTime.value,
+        topic: topic,
+        message: reserveMessage.value.trim(),
+        feedbackEmail: feedbackCheck.checked ? feedbackEmail.value.trim() : ""
+    };
+
+    try {
+        const reservations = loadReservations();
+
+        // 같은 날짜와 시간에 이미 예약이 있으면 저장하지 않음
+        for (let i = 0; i < reservations.length; i++) {
+            if (reservations[i].date === newReservation.date && reservations[i].time === newReservation.time) {
+                finishReserving();
+                showFieldError(reserveTime, reserveTimeError, "오류: 이 시간은 이미 예약되어 있습니다. 다른 시간이나 날짜를 선택해 주세요.");
+                showReserveStatus("예약에 실패했습니다. " + newReservation.date + " " + newReservation.time + "은(는) 이미 예약된 시간입니다. 시간을 바꾼 뒤 다시 신청해 주세요.", "is-error");
+                reserveTime.focus();
+                return;
+            }
+        }
+
+        reservations.push(newReservation);
+        localStorage.setItem("reservations", JSON.stringify(reservations));
+    } catch (error) {
+        // 브라우저 저장소를 사용할 수 없는 경우
+        finishReserving();
+        showReserveStatus("예약에 실패했습니다. 브라우저 저장 공간을 사용할 수 없습니다. 입력 내용은 그대로 있으니 잠시 후 다시 신청해 주세요.", "is-error");
+        reserveSubmit.focus();
+        return;
+    }
+
+    finishReserving();
+    reserveForm.reset();
+    renderReservations();
+    showReserveStatus("예약이 완료되었습니다! " + newReservation.name + "님, " + newReservation.date + " " + newReservation.time + "에 '" + newReservation.topic + "' 수업에서 만나요.", "is-success");
+}
+
+function handleReserveSubmit(event) {
+    event.preventDefault();
+
+    // 제출 중에는 다시 제출되지 않게 막기
+    if (isReserving) return;
+
+    // 모든 항목을 검사하고 틀린 항목 이름을 모으기
+    const wrongFields = [];
+    if (!validateReserveName()) wrongFields.push("예약자 이름");
+    if (!validateReserveDate()) wrongFields.push("수업 날짜");
+    if (!validateReserveTime()) wrongFields.push("수업 시간");
+    if (!validateReserveMessage()) wrongFields.push("선생님께 전할 말");
+    if (!validateFeedbackEmail()) wrongFields.push("피드백 받을 이메일");
+
+    if (wrongFields.length > 0) {
+        showReserveStatus("제출할 수 없습니다. 수정이 필요한 항목: " + wrongFields.join(", ") + " (각 항목 아래 안내를 확인해 주세요.)", "is-error");
+        reserveForm.querySelector(".has-error").focus();
+        return;
+    }
+
+    isReserving = true;
+    reserveSubmit.disabled = true;
+    reserveReset.disabled = true;
+    reserveSubmit.textContent = "예약하는 중...";
+    showReserveStatus("예약을 신청하고 있습니다. 잠시만 기다려 주세요.", "is-loading");
+
+    // 1초 뒤 브라우저에 저장
+    setTimeout(saveReservation, 1000);
+}
+
+reserveForm.addEventListener("submit", handleReserveSubmit);
+
+// 입력값과 함께 오류 문구, 글자 수, 조건부 영역, 버튼 상태도 처음으로
+reserveForm.addEventListener("reset", () => {
+    clearFieldError(reserveName, reserveNameError);
+    clearFieldError(reserveDate, reserveDateError);
+    clearFieldError(reserveTime, reserveTimeError);
+    clearFieldError(reserveMessage, reserveMessageError);
+    clearFieldError(feedbackEmail, feedbackEmailError);
+
+    reserveNameCount.textContent = "0 / 10자";
+    reserveMessageCount.textContent = "0 / 200자 (10자 이상 필요)";
+    reserveMessageCount.classList.remove("is-ok");
+
+    feedbackArea.hidden = true;
+    feedbackEmail.disabled = true;
+    feedbackCheck.setAttribute("aria-expanded", "false");
+
+    showReserveStatus("", "");
+    finishReserving();
+});
+
+renderReservations();

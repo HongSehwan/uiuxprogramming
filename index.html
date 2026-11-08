@@ -27,6 +27,7 @@
             <a href="#about">서비스 소개</a>
             <a href="#features">학습 기능</a>
             <a href="#steps">이용 방법</a>
+            <a href="#reserve">화상수업 예약</a>
             <a href="#subscribe">학습 소식 받기</a>
         </nav>
     </header>
@@ -171,9 +172,26 @@
 
             <section class="step" data-step="1" hidden>
                 <h3>학습 닉네임을 입력해 주세요.</h3>
-                <label for="nickname">닉네임</label>
-                <input id="nickname" type="text" placeholder="예: 홍길동" aria-describedby="nickname-error">
-                <p id="nickname-error" class="error-message" aria-live="polite"></p>
+                <div class="field" id="nickname-field">
+                    <label for="nickname">
+                        닉네임 <span class="required">필수</span>
+                    </label>
+                    <input
+                        id="nickname"
+                        name="nickname"
+                        type="text"
+                        minlength="1"
+                        maxlength="10"
+                        required
+                        placeholder="예: 홍길동"
+                        aria-describedby="nickname-help nickname-count nickname-error"
+                    >
+                    <div class="field-meta">
+                        <p id="nickname-help">학습 화면에 표시될 닉네임을 1자 이상 10자 이하로 입력해 주세요.</p>
+                        <p id="nickname-count" aria-live="polite">0 / 10자</p>
+                    </div>
+                    <p id="nickname-error" class="field-error" role="alert"></p>
+                </div>
                 <button id="nickname-next" type="button">학습 조건 선택하기</button>
             </section>
 
@@ -182,13 +200,30 @@
                 <label for="word-count-range">학습 단어 수</label>
                 <input id="word-count-range" type="range" min="0" max="2" step="1" value="1">
                 <output id="word-count-value" for="word-count-range">5개</output>
-                <label><input type="checkbox" id="sentence-option">문장 포함</label>
-                <fieldset id="sentence-options" hidden>
-                    <legend>문장 수</legend>
-                    <label><input type="radio" name="sentence-count" value="1">1개</label>
-                    <label><input type="radio" name="sentence-count" value="2" checked>2개</label>
-                    <label><input type="radio" name="sentence-count" value="3">3개</label>
-                </fieldset>
+                <div class="field sentence-field">
+                    <label class="check-row" for="sentence-option">
+                        <input
+                            id="sentence-option"
+                            name="sentence"
+                            type="checkbox"
+                            value="included"
+                            aria-controls="sentence-options"
+                            aria-expanded="false"
+                        >
+                        <span>
+                            <strong>문장도 함께 학습할게요</strong>
+                            <small>단어 문제 뒤에 풀 문장 수를 정할 수 있습니다.</small>
+                        </span>
+                    </label>
+                    <fieldset id="sentence-options" class="sentence-options" hidden>
+                        <legend>문장 수</legend>
+                        <div class="inline-options">
+                            <label><input type="radio" name="sentence-count" value="1" disabled> 1개</label>
+                            <label><input type="radio" name="sentence-count" value="2" checked disabled> 2개</label>
+                            <label><input type="radio" name="sentence-count" value="3" disabled> 3개</label>
+                        </div>
+                    </fieldset>
+                </div>
                 <div class="step-actions">
                     <button id="option-prev" type="button">이전</button>
                     <button id="option-next" type="button">내용 확인하기</button>
@@ -276,6 +311,80 @@
                     <button id="result-back" class="sub-button" type="button">학습 설정으로 돌아가기</button>
                 </div>
             </div>
+        </section>
+
+        <!-- 원어민 화상수업 예약 폼 -->
+        <section id="reserve" class="reserve-card">
+            <h2>원어민 화상수업 예약</h2>
+            <p>원하는 날짜와 시간을 골라 원어민 선생님과의 1:1 화상수업을 예약합니다. <span class="required">필수</span> 표시가 있는 항목은 꼭 입력해 주세요.</p>
+
+            <form id="reserve-form" class="reserve-form" novalidate>
+                <div class="form-row">
+                    <label for="reserve-name">예약자 이름 <span class="required">필수</span></label>
+                    <input id="reserve-name" name="name" type="text" minlength="2" maxlength="10" required autocomplete="name" aria-describedby="reserve-name-help reserve-name-error">
+                    <p id="reserve-name-help" class="help-text">2~10자로 입력해 주세요. <span id="reserve-name-count">0 / 10자</span></p>
+                    <p id="reserve-name-error" class="field-error" role="alert"></p>
+                </div>
+
+                <div class="form-row">
+                    <label for="reserve-date">수업 날짜 <span class="required">필수</span></label>
+                    <input id="reserve-date" name="date" type="date" required aria-describedby="reserve-date-help reserve-date-error">
+                    <p id="reserve-date-help" class="help-text">오늘 이후의 날짜를 선택해 주세요.</p>
+                    <p id="reserve-date-error" class="field-error" role="alert"></p>
+                </div>
+
+                <div class="form-row">
+                    <label for="reserve-time">수업 시간 <span class="required">필수</span></label>
+                    <select id="reserve-time" name="time" required aria-describedby="reserve-time-help reserve-time-error">
+                        <option value="">시간을 선택해 주세요</option>
+                        <option value="오전 10:00">오전 10:00</option>
+                        <option value="오후 2:00">오후 2:00</option>
+                        <option value="오후 8:00">오후 8:00</option>
+                    </select>
+                    <p id="reserve-time-help" class="help-text">수업은 25분 동안 진행됩니다.</p>
+                    <p id="reserve-time-error" class="field-error" role="alert"></p>
+                </div>
+
+                <fieldset class="form-row">
+                    <legend>수업 주제 <span class="required">필수</span></legend>
+                    <label class="choice-row"><input type="radio" name="topic" value="자유 대화" checked>자유 대화</label>
+                    <label class="choice-row"><input type="radio" name="topic" value="오늘 배운 단어 복습">오늘 배운 단어 복습</label>
+                    <label class="choice-row"><input type="radio" name="topic" value="상황별 회화">상황별 회화 (공항, 식당 등)</label>
+                </fieldset>
+
+                <div class="form-row">
+                    <label for="reserve-message">선생님께 전할 말 <span class="required">필수</span></label>
+                    <textarea id="reserve-message" name="message" rows="4" minlength="10" maxlength="200" required aria-describedby="reserve-message-help reserve-message-error"></textarea>
+                    <p id="reserve-message-help" class="help-text">나의 영어 수준이나 연습하고 싶은 내용을 10자 이상 적어 주세요. <span id="reserve-message-count" class="count-text">0 / 200자 (10자 이상 필요)</span></p>
+                    <p id="reserve-message-error" class="field-error" role="alert"></p>
+                </div>
+
+                <!-- 체크하면 피드백 이메일 입력 영역이 나타남 -->
+                <div class="form-row">
+                    <label class="choice-row">
+                        <input type="checkbox" id="feedback-check" name="feedback" aria-controls="feedback-area" aria-expanded="false">
+                        수업이 끝난 뒤 학습 피드백을 이메일로 받기
+                    </label>
+                </div>
+
+                <div id="feedback-area" class="form-row feedback-area" hidden>
+                    <label for="feedback-email">피드백 받을 이메일 <span class="required">필수</span></label>
+                    <input id="feedback-email" name="feedbackEmail" type="email" placeholder="name@example.com" disabled aria-describedby="feedback-email-help feedback-email-error">
+                    <p id="feedback-email-help" class="help-text">@와 .이 포함된 이메일 주소를 입력해 주세요.</p>
+                    <p id="feedback-email-error" class="field-error" role="alert"></p>
+                </div>
+
+                <p id="reserve-status" class="reserve-status" aria-live="polite"></p>
+
+                <div class="form-actions">
+                    <button id="reserve-reset" class="sub-button" type="reset">다시 작성</button>
+                    <button id="reserve-submit" type="submit">예약 신청하기</button>
+                </div>
+            </form>
+
+            <h3>나의 예약 내역</h3>
+            <ul id="reserve-list" class="reserve-list"></ul>
+            <p id="reserve-empty" class="help-text">아직 예약한 수업이 없습니다.</p>
         </section>
 
         <section id="subscribe" class="subscribe-card">

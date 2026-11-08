@@ -334,11 +334,30 @@ body.dark #video-call-dialog {background: #50515f; color: #fff;}
     font-weight: 800;
 }
 
-.training-flow .error-message {
-    min-height: 24px;
+.field-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.field-meta p {
+    margin: 6px 0 0;
+    color: #555763;
+    font-size: 15px;
+}
+
+.required {
+    margin-left: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
     color: #9d243d;
+    background-color: #fbeaee;
+    font-size: 13px;
     font-weight: 700;
 }
+
+.training-flow #nickname {width: 100%;}
 .training-flow #nickname.has-error {border-color: #9d243d;}
 .training-flow #word-count-range {width: 100%; accent-color: #635bff;}
 .training-flow input[type="checkbox"],
@@ -347,6 +366,23 @@ body.dark #video-call-dialog {background: #50515f; color: #fff;}
     width: auto;
     accent-color: #635bff;
 }
+
+.training-flow .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.training-flow .check-row input {margin-top: 6px;}
+.training-flow .check-row small {display: block; color: #555763;}
+.training-flow .sentence-options {
+    margin-top: 12px;
+    border: 1px solid #deddea;
+    border-radius: 12px;
+}
+.training-flow .inline-options {display: flex; flex-wrap: wrap; gap: 16px;}
+body.dark .training-flow .check-row small {color: #f4f4f8;}
 
 .training-flow .summary-list > div {
     display: flex;
@@ -597,6 +633,165 @@ body.dark .word-quiz button:disabled {
     border-color: #6b6c78;
 }
 
+/* 원어민 화상수업 예약 폼 */
+.reserve-card {
+    padding: 24px;
+    border: 1px solid #deddea;
+    border-radius: 24px;
+    background-color: #ffffff;
+}
+
+.reserve-form {
+    display: block;
+}
+
+.reserve-form .form-row {
+    margin: 0 0 20px;
+    padding: 0;
+    border: 0;
+}
+
+.reserve-form label,
+.reserve-form legend {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.reserve-form input[type="text"],
+.reserve-form input[type="date"],
+.reserve-form input[type="email"],
+.reserve-form select,
+.reserve-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #b8b7c5;
+    border-radius: 10px;
+    font: inherit;
+}
+
+.reserve-form .choice-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+}
+
+.reserve-form .choice-row input {
+    flex: 0 0 auto;
+    width: auto;
+    accent-color: #635bff;
+}
+
+.reserve-form .has-error {
+    border: 2px solid #9d243d;
+}
+
+.reserve-form input:disabled {
+    background-color: #f1f1f4;
+}
+
+.reserve-form .feedback-area {
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #f4f3ff;
+}
+
+.feedback-area[hidden],
+.reserve-card [hidden] {
+    display: none;
+}
+
+.help-text {
+    margin: 6px 0 0;
+    color: #555763;
+    font-size: 15px;
+}
+
+.count-text {
+    font-weight: 700;
+}
+
+.count-text.is-ok {
+    color: #245c3a;
+}
+
+.field-error {
+    margin: 4px 0 0;
+    color: #9d243d;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.reserve-status:empty {
+    display: none;
+}
+
+.reserve-status {
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.reserve-status.is-loading {
+    color: #2f4f9e;
+    background-color: #eef2fb;
+}
+
+.reserve-status.is-error {
+    color: #9d243d;
+    background-color: #fbeaee;
+}
+
+.reserve-status.is-success {
+    color: #245c3a;
+    background-color: #e7f7ed;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.reserve-form button:disabled {
+    color: #ffffff;
+    background-color: #a8a8b2;
+    border-color: #a8a8b2;
+    cursor: not-allowed;
+}
+
+.reserve-list {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid #deddea;
+}
+
+.reserve-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid #deddea;
+}
+
+body.dark .reserve-card {
+    background-color: #50515f;
+    border-color: #2d2e38;
+}
+
+body.dark .feedback-area {
+    background-color: #2d2e38;
+}
+
+body.dark .field-meta p,
+body.dark .help-text,
+body.dark .count-text.is-ok {
+    color: #f4f4f8;
+}
+
+body.dark .field-error {
+    color: #ffb3c1;
+}
+
 /* 웹페이지가 표시되는 가로 폭이 768px 이하일 때만 적용 */
 @media (max-width: 768px) {
     body {
@@ -707,5 +902,13 @@ body.dark .word-quiz button:disabled {
 
     .quiz-quit-box {
         padding: 20px;
+    }
+
+    .reserve-card {
+        padding: 20px;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
     }
 }
