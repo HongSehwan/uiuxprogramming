@@ -19,17 +19,26 @@
         정보 순서: 매일 영어 단어와 문장 학습 → 단어와 문장을 토대로 원어민과의 화상통화 진행 → 복습 및 예습을 위한 게임형 영어 학습 콘텐츠 진행
     -->
 
+    <!-- 스크롤해도 화면 위에 고정 -->
+    <nav class="site-nav" aria-label="주요 메뉴">
+        <div class="nav-inner">
+            <a class="brand" href="#about">두근두근 영어</a>
+            <button id="menu-toggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu">메뉴 열기</button>
+            <ul id="main-menu" class="menu">
+                <li><a href="#about">서비스 소개</a></li>
+                <li><a href="#features">학습 기능</a></li>
+                <li><a href="#steps">이용 방법</a></li>
+                <li><a href="#event-practice">화상통화 설정</a></li>
+                <li><a href="#reserve">화상수업 예약</a></li>
+                <li><a href="#reservations">나의 예약 내역</a></li>
+                <li><a href="#subscribe">학습 소식 받기</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <header>
         <h1>영어 울렁증 극복 서비스</h1>
         <p>탄탄한 영어 기본기를 쌓고 원어민과 직접 소통하며 영어에 대한 두려움을 자신감으로 바꿉니다.</p>
-
-        <nav aria-label="주요 메뉴">
-            <a href="#about">서비스 소개</a>
-            <a href="#features">학습 기능</a>
-            <a href="#steps">이용 방법</a>
-            <a href="#reserve">화상수업 예약</a>
-            <a href="#subscribe">학습 소식 받기</a>
-        </nav>
     </header>
 
     <main>
@@ -381,10 +390,20 @@
                     <button id="reserve-submit" type="submit">예약 신청하기</button>
                 </div>
             </form>
+        </section>
 
-            <h3>나의 예약 내역</h3>
+        <!-- 예약 내역을 수업 주제별로 골라 보기 -->
+        <section id="reservations" class="reserve-card">
+            <h2>나의 예약 내역</h2>
+            <div class="filter-group" role="group" aria-label="수업 주제로 예약 내역 골라 보기">
+                <button class="filter-button" type="button" data-topic="전체" aria-pressed="true">전체</button>
+                <button class="filter-button" type="button" data-topic="자유 대화" aria-pressed="false">자유 대화</button>
+                <button class="filter-button" type="button" data-topic="오늘 배운 단어 복습" aria-pressed="false">오늘 배운 단어 복습</button>
+                <button class="filter-button" type="button" data-topic="상황별 회화" aria-pressed="false">상황별 회화</button>
+            </div>
+            <p id="reserve-count" class="reserve-count" aria-live="polite"></p>
             <ul id="reserve-list" class="reserve-list"></ul>
-            <p id="reserve-empty" class="help-text">아직 예약한 수업이 없습니다.</p>
+            <p id="reserve-empty" class="empty-message" hidden></p>
         </section>
 
         <section id="subscribe" class="subscribe-card">

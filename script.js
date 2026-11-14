@@ -673,6 +673,9 @@ const reserveSubmit = document.querySelector("#reserve-submit");
 const reserveReset = document.querySelector("#reserve-reset");
 const reserveList = document.querySelector("#reserve-list");
 const reserveEmpty = document.querySelector("#reserve-empty");
+const reserveCount = document.querySelector("#reserve-count");
+const filterButtons = document.querySelectorAll(".filter-button");
+let currentTopic = "전체";
 
 const messageMinLength = 10;
 let isReserving = false;
@@ -845,19 +848,51 @@ function loadReservations() {
     return JSON.parse(saved);
 }
 
+// 선택한 주제에 맞는 예약만 목록에 표시
 function renderReservations() {
     const reservations = loadReservations();
+    let shownCount = 0;
     reserveList.innerHTML = "";
 
     for (let i = 0; i < reservations.length; i++) {
-        const item = document.createElement("li");
         const r = reservations[i];
-        item.textContent = r.date + " " + r.time + " · " + r.topic + " · " + r.name + "님";
-        reserveList.appendChild(item);
+
+        if (currentTopic === "전체" || r.topic === currentTopic) {
+            const item = document.createElement("li");
+            item.textContent = r.date + " " + r.time + " · " + r.topic + " · " + r.name + "님";
+            reserveList.appendChild(item);
+            shownCount += 1;
+        }
     }
 
-    reserveEmpty.hidden = reservations.length > 0;
+    if (currentTopic === "전체") {
+        reserveCount.textContent = "전체 예약 " + reservations.length + "개를 보여 주고 있습니다.";
+    } else {
+        reserveCount.textContent = "'" + currentTopic + "' 수업 " + shownCount + "개를 보여 주고 있습니다. (전체 " + reservations.length + "개)";
+    }
+
+    // 예약이 아예 없는 경우와 선택한 주제의 예약만 없는 경우를 나눠서 안내
+    if (reservations.length === 0) {
+        reserveEmpty.textContent = "아직 예약한 수업이 없습니다. 메뉴의 '화상수업 예약'에서 첫 수업을 예약해 보세요.";
+    } else if (shownCount === 0) {
+        reserveEmpty.textContent = "'" + currentTopic + "' 주제로 예약한 수업이 없습니다. 다른 주제를 고르거나 '전체'를 눌러 보세요.";
+    }
+
+    reserveList.hidden = shownCount === 0;
+    reserveEmpty.hidden = shownCount > 0;
 }
+
+filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        currentTopic = button.dataset.topic;
+
+        filterButtons.forEach((other) => {
+            other.setAttribute("aria-pressed", other === button ? "true" : "false");
+        });
+
+        renderReservations();
+    });
+});
 
 function finishReserving() {
     isReserving = false;
@@ -904,7 +939,7 @@ function saveReservation() {
     finishReserving();
     reserveForm.reset();
     renderReservations();
-    showReserveStatus("예약이 완료되었습니다! " + newReservation.name + "님, " + newReservation.date + " " + newReservation.time + "에 '" + newReservation.topic + "' 수업에서 만나요.", "is-success");
+    showReserveStatus("예약이 완료되었습니다! " + newReservation.name + "님, " + newReservation.date + " " + newReservation.time + "에 '" + newReservation.topic + "' 수업에서 만나요. '나의 예약 내역'에서 확인할 수 있습니다.", "is-success");
 }
 
 function handleReserveSubmit(event) {
@@ -960,3 +995,47 @@ reserveForm.addEventListener("reset", () => {
 });
 
 renderReservations();
+
+// ===== 주요 메뉴 =====
+const menuToggle = document.querySelector("#menu-toggle");
+const mainMenu = document.querySelector("#main-menu");
+const menuLinks = document.querySelectorAll("#main-menu a");
+
+// 주소의 #값과 같은 메뉴에만 aria-current 표시 (주소에 #이 없으면 서비스 소개)
+function updateCurrentMenu() {
+    let currentHash = location.hash;
+    if (currentHash === "") currentHash = "#about";
+
+    menuLinks.forEach((link) => {
+        if (link.getAttribute("href") === currentHash) {
+            link.setAttribute("aria-current", "page");
+        } else {
+            link.removeAttribute("aria-current");
+        }
+    });
+}
+
+// 메뉴 이동, 뒤로 가기, 앞으로 가기 모두 hashchange가 발생
+window.addEventListener("hashchange", updateCurrentMenu);
+updateCurrentMenu();
+
+// 모바일 메뉴: 표시 상태, 버튼 문구, aria-expanded를 함께 변경
+function setMenuOpen(isOpen) {
+    if (isOpen) {
+        mainMenu.classList.add("is-open");
+    } else {
+        mainMenu.classList.remove("is-open");
+    }
+
+    menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    menuToggle.textContent = isOpen ? "메뉴 닫기" : "메뉴 열기";
+}
+
+menuToggle.addEventListener("click", () => {
+    setMenuOpen(!mainMenu.classList.contains("is-open"));
+});
+
+// 목적지를 고르면 메뉴 닫기
+menuLinks.forEach((link) => {
+    link.addEventListener("click", () => setMenuOpen(false));
+});

@@ -41,20 +41,70 @@ footer {
     padding-bottom: 32px;
 }
 
-nav {
+.site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #fcfcfa;
+    border-bottom: 1px solid #deddea;
+}
+
+.nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 24px;
+}
+
+.brand {
+    color: #2f4f9e;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.menu-toggle {
+    display: none;
+}
+
+.menu {
     display: flex;
 
     /* 메뉴가 들어갈 자리가 부족하면 다음 줄로 이동 */
     flex-wrap: wrap;
 
-    gap: 24px;
-    margin-top: 24px;
+    gap: 4px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-nav a {
+.menu a {
+    display: block;
+    padding: 6px 2px;
     color: #353b48;
+    font-size: 16px;
     font-weight: 700;
     text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+
+.menu a:hover {
+    color: #2f4f9e;
+}
+
+/* 현재 위치 메뉴: 색상과 밑줄로 구분 */
+.menu a[aria-current="page"] {
+    color: #2f4f9e;
+    border-bottom-color: #2f4f9e;
+}
+
+/* 메뉴로 이동했을 때 고정 메뉴에 제목이 가려지지 않게 */
+section[id] {
+    scroll-margin-top: 80px;
 }
 
 h1 {
@@ -227,8 +277,19 @@ body.dark {
 }
 
 body.dark p,
-body.dark nav a {
+body.dark .menu a {
     color: #d8b8e2;
+}
+
+body.dark .site-nav {
+    background-color: #20212a;
+    border-color: #50515f;
+}
+
+body.dark .brand,
+body.dark .menu a[aria-current="page"] {
+    color: #b9b5ff;
+    border-bottom-color: #b9b5ff;
 }
 
 body.dark .feature-card,
@@ -792,6 +853,58 @@ body.dark .field-error {
     color: #ffb3c1;
 }
 
+/* 나의 예약 내역 필터 */
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-button {
+    color: #2f4f9e;
+    background-color: #ffffff;
+    border: 1px solid #2f4f9e;
+    border-radius: 999px;
+}
+
+.filter-button:hover,
+.filter-button[aria-pressed="true"] {
+    color: #ffffff;
+    background-color: #2f4f9e;
+}
+
+/* 선택된 필터는 색상과 함께 체크 표시 */
+.filter-button[aria-pressed="true"]::before {
+    content: "✓ ";
+}
+
+.reserve-count {
+    font-weight: 700;
+}
+
+.empty-message {
+    padding: 16px;
+    border-radius: 10px;
+    color: #555763;
+    background-color: #ecebf2;
+}
+
+body.dark .filter-button {
+    color: #b9b5ff;
+    background-color: #2d2e38;
+    border-color: #b9b5ff;
+}
+
+body.dark .filter-button[aria-pressed="true"] {
+    color: #20212a;
+    background-color: #b9b5ff;
+}
+
+body.dark .empty-message {
+    color: #f4f4f8;
+    background-color: #2d2e38;
+}
+
 /* 웹페이지가 표시되는 가로 폭이 768px 이하일 때만 적용 */
 @media (max-width: 768px) {
     body {
@@ -819,16 +932,45 @@ body.dark .field-error {
         font-size: 20px;
     }
 
-    /* 가로 메뉴를 위에서 아래로 배치 */
-    nav {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+    /* 좁은 화면: 메뉴 열기 버튼으로 메뉴를 펼치고 접기 */
+    .menu-toggle {
+        display: block;
+        width: auto;
+        min-height: 44px;
     }
 
-    nav a {
+    .menu {
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+    }
+
+    .menu.is-open {
+        display: flex;
+    }
+
+    .menu a {
         /* 링크 글자 주변에도 누를 수 있는 여백 추가 */
-        padding: 8px 0;
+        padding: 12px 8px;
+        border-bottom: 1px solid #deddea;
+        border-left: 4px solid transparent;
+    }
+
+    .menu a[aria-current="page"] {
+        border-bottom-color: #deddea;
+        border-left-color: #2f4f9e;
+        background-color: #eef2fb;
+    }
+
+    body.dark .menu a[aria-current="page"] {
+        border-bottom-color: #50515f;
+        border-left-color: #b9b5ff;
+        background-color: #2d2e38;
+    }
+
+    .filter-button {
+        width: auto;
     }
 
     /* 기능 카드를 한 열로 배치 */
