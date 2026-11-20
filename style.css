@@ -103,8 +103,9 @@ footer {
 }
 
 /* 메뉴로 이동했을 때 고정 메뉴에 제목이 가려지지 않게 */
-section[id] {
-    scroll-margin-top: 80px;
+section[id],
+main {
+    scroll-margin-top: 120px;
 }
 
 h1 {
@@ -201,10 +202,62 @@ button:hover {
     background-color: #4a5264;
 }
 
-button:focus,
-input:focus {
-    outline: 3px solid #d0dcf5;
-    outline-offset: 2px;
+/* 배경과 잘 구분되는 진한 테두리 */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+h3:focus-visible {
+    outline: 3px solid #2f4f9e;
+    outline-offset: 3px;
+}
+
+body.dark a:focus-visible,
+body.dark button:focus-visible,
+body.dark input:focus-visible,
+body.dark select:focus-visible,
+body.dark textarea:focus-visible,
+body.dark h3:focus-visible {
+    outline-color: #ffd166;
+}
+
+/* 본문 영역은 초점을 받아도 테두리를 그리지 않음 */
+main:focus {
+    outline: none;
+}
+
+/* 색상과 함께 점선 테두리로 구분 */
+button:disabled,
+button:disabled:hover {
+    color: #353b48;
+    background-color: #dcdce3;
+    border: 1px dashed #6b6c78;
+    cursor: not-allowed;
+}
+
+body.dark button:disabled {
+    color: #f4f4f8;
+    background-color: #3a3b47;
+    border-color: #9a9aa8;
+}
+
+/* 평소에는 숨김 처리로 Tab으로 초점을 받으면 표시 */
+.skip-link {
+    position: absolute;
+    top: -80px;
+    left: 16px;
+    z-index: 20;
+    padding: 12px 16px;
+    border-radius: 10px;
+    color: #ffffff;
+    background-color: #2f4f9e;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    top: 16px;
 }
 
 button:active {
@@ -224,10 +277,24 @@ button:active {
     font-weight: 700;
 }
 
-#subscribeButton:disabled{
-    color: #ffffff;
-    background-color: #a8a8b2;
-    cursor: not-allowed;
+#subscribeMessage.is-error {
+    color: #9d243d;
+    background-color: #fbeaee;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+body.dark #subscribeMessage {
+    color: #f4f4f8;
+}
+
+body.dark #subscribeMessage.is-success {
+    color: #245c3a;
+}
+
+body.dark #subscribeMessage.is-error {
+    color: #9d243d;
 }
 
 .event-grid {
@@ -265,11 +332,6 @@ button:active {
     margin-top: 6px;
 }
 
-#startButton:disabled {
-    color: #ffffff;
-    background-color: #a8a8b2;
-    cursor: not-allowed;
-}
 
 body.dark {
     color: #f4f4f8;
@@ -278,7 +340,11 @@ body.dark {
 
 body.dark p,
 body.dark .menu a {
-    color: #d8b8e2;
+    color: #f4f4f8;
+}
+
+body.dark h2 {
+    color: #b9b5ff;
 }
 
 body.dark .site-nav {
@@ -300,6 +366,7 @@ body.dark .subscribe-card {
 }
 
 #agreeMessage {
+    color: #353b48;
     padding: 12px;
     border-radius: 10px;
     background-color: #ecebf2;
@@ -389,11 +456,14 @@ body.dark #video-call-dialog {background: #50515f; color: #fff;}
 .training-flow[hidden],
 .training-flow .step[hidden],
 .training-flow fieldset[hidden] {display: none;}
-.training-flow .progress {display: flex; flex-wrap: wrap; gap: 12px;}
+.training-flow .progress {display: flex; flex-wrap: wrap; gap: 12px; padding: 0; list-style: none;}
+/* 현재 단계: 색상과 함께 밑줄로 구분 */
 .training-flow .progress__item.is-active {
     color: #635bff;
     font-weight: 800;
+    border-bottom: 3px solid currentColor;
 }
+body.dark .training-flow .progress__item.is-active {color: #b9b5ff;}
 
 .field-meta {
     display: flex;
@@ -550,13 +620,6 @@ body.dark .training-flow {
     background-color: #e7f7ed;
 }
 
-.word-quiz button:disabled {
-    color: #ffffff;
-    background-color: #a8a8b2;
-    border-color: #a8a8b2;
-    cursor: not-allowed;
-}
-
 .quiz-feedback.is-skip {
     padding: 12px;
     border-radius: 10px;
@@ -688,12 +751,6 @@ body.dark .word-quiz h2 {
     color: #b9b5ff;
 }
 
-body.dark .word-quiz button:disabled {
-    color: #d8d8e2;
-    background-color: #6b6c78;
-    border-color: #6b6c78;
-}
-
 /* 원어민 화상수업 예약 폼 */
 .reserve-card {
     padding: 24px;
@@ -814,13 +871,6 @@ body.dark .word-quiz button:disabled {
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 12px;
-}
-
-.reserve-form button:disabled {
-    color: #ffffff;
-    background-color: #a8a8b2;
-    border-color: #a8a8b2;
-    cursor: not-allowed;
 }
 
 .reserve-list {

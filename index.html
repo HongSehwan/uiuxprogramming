@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 키보드 사용자가 메뉴를 건너뛰고 본문으로 바로 이동 -->
+    <a class="skip-link" href="#main-content">본문 바로가기</a>
+
     <!--
         사용자: 영어에 대한 두려움이나 부담을 느끼는 학습자
         목적: 영어의 기본기를 탄탄하게 익히고 영어에 대한 자신감 향상
@@ -41,12 +44,12 @@
         <p>탄탄한 영어 기본기를 쌓고 원어민과 직접 소통하며 영어에 대한 두려움을 자신감으로 바꿉니다.</p>
     </header>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <section id="about">
             <h2>서비스 소개</h2>
             <h3>영어 기본기와 원어민 소통으로 영어 자신감을 키우는 학습</h3>
 
-            <img src="assets/images/service.png" alt="영어 학습의 전체 과정과 주요 기능을 한눈에">
+            <img src="assets/images/service.png" alt="헤드폰을 쓴 학습자가 노트북으로 원어민 선생님과 화상통화하는 모습과 단계별 단어와 문장 학습, 원어민 회화 프로그램, 게임을 통한 영어 복습 순서로 서비스 과정과 이용 방법 5단계를 안내">
 
             <p>수준에 맞는 단어와 문장을 학습하고 원어민과의 실전 대화를 통해 영어를 직접 사용해 봅니다.</p>
             <p>게임형 학습 콘텐츠로 배운 내용을 재미있게 복습하며 영어에 대한 자신감을 키울 수 있습니다.</p>
@@ -142,8 +145,8 @@
                 <article class="event-card">
                     <h3>학습자 정보</h3>
                     <label for="name">학습자 이름</label>
-                    <input type="text" id="name" maxlength="10">
-                    <p id="nameCount" aria-live="polite">0 / 10</p>
+                    <input type="text" id="name" maxlength="10" aria-describedby="nameCount">
+                    <p id="nameCount" aria-live="polite">0 / 10자</p>
                 </article>
 
                 <article class="event-card">
@@ -173,14 +176,14 @@
 
         <section id="training-flow" class="training-flow" hidden>
             <h2>학습 설정</h2>
-            <p class="progress" aria-label="설정 진행 단계">
-                <span class="progress__item">1 . 정보</span>
-                <span class="progress__item">2 . 조건</span>
-                <span class="progress__item">3 . 확인</span>
-            </p>
+            <ol class="progress" aria-label="설정 진행 단계">
+                <li class="progress__item">1. 정보</li>
+                <li class="progress__item">2. 조건</li>
+                <li class="progress__item">3. 확인</li>
+            </ol>
 
             <section class="step" data-step="1" hidden>
-                <h3>학습 닉네임을 입력해 주세요.</h3>
+                <h3 tabindex="-1">학습 닉네임을 입력해 주세요.</h3>
                 <div class="field" id="nickname-field">
                     <label for="nickname">
                         닉네임 <span class="required">필수</span>
@@ -205,9 +208,9 @@
             </section>
 
             <section class="step" data-step="2" hidden>
-                <h3>학습 조건을 선택해 주세요.</h3>
+                <h3 tabindex="-1">학습 조건을 선택해 주세요.</h3>
                 <label for="word-count-range">학습 단어 수</label>
-                <input id="word-count-range" type="range" min="0" max="2" step="1" value="1">
+                <input id="word-count-range" type="range" min="0" max="2" step="1" value="1" aria-valuetext="5개">
                 <output id="word-count-value" for="word-count-range">5개</output>
                 <div class="field sentence-field">
                     <label class="check-row" for="sentence-option">
@@ -234,13 +237,13 @@
                     </fieldset>
                 </div>
                 <div class="step-actions">
-                    <button id="option-prev" type="button">이전</button>
+                    <button id="option-prev" type="button">이전 단계로</button>
                     <button id="option-next" type="button">내용 확인하기</button>
                 </div>
             </section>
 
             <section class="step" data-step="3" hidden>
-                <h3>입력한 내용을 확인해 주세요.</h3>
+                <h3 tabindex="-1">입력한 내용을 확인해 주세요.</h3>
                 <div class="summary-list">
                     <div><span>닉네임</span><strong id="summary-nickname"></strong></div>
                     <div><span>학습 단어 수</span><strong id="summary-word-count"></strong></div>
@@ -253,7 +256,7 @@
             </section>
 
             <section class="step complete-step" data-step="4" hidden>
-                <h3>학습 설정이 완료되었습니다.</h3>
+                <h3 tabindex="-1">학습 설정이 완료되었습니다.</h3>
                 <p>설정한 내용으로 오늘의 단어 학습을 시작할 수 있습니다. 필요하면 다시 설정할 수 있습니다.</p>
                 <div class="step-actions">
                     <button id="restart-button" type="button">다시 설정하기</button>
@@ -410,7 +413,7 @@
             <h2> 학습 소식 받기 </h2>
             <form id="subscribe-form">
                 <label for="email">이메일</label>
-                <input type="email" id="email" name="email" placeholder="name@example.com">
+                <input type="email" id="email" name="email" placeholder="name@example.com" aria-describedby="subscribeMessage">
                 <button id="subscribeButton" type="submit">학습 소식 신청하기</button>
             </form>
             <p id="subscribeMessage" aria-live="polite">

@@ -20,11 +20,16 @@ function handleSubscribe(event) {
 
     const subscribeEmail = emailInput.value.trim();
 
-    if(subscribeEmail === "") {
-        subscribeMessage.textContent = "이메일을 입력한 뒤 신청해주세요.";
+    if (subscribeEmail === "" || !subscribeEmail.includes("@")) {
+        subscribeMessage.textContent = "오류: 이메일 주소를 확인해 주세요. name@example.com 처럼 @가 들어간 주소를 입력한 뒤 신청해 주세요.";
+        subscribeMessage.classList.add("is-error");
+        emailInput.setAttribute("aria-invalid", "true");
         emailInput.focus();
         return;
     }
+
+    subscribeMessage.classList.remove("is-error");
+    emailInput.removeAttribute("aria-invalid");
 
     isSubscribed = true;
     submitCount += 1;
@@ -57,7 +62,7 @@ themeButton.addEventListener("click", handleThemeClick);
 function handleNameInput() {
     const maxLength = nameInput.maxLength;
     const currentLength = Math.min(nameInput.value.length, maxLength);
-    nameCount.textContent = currentLength + " / " + maxLength;
+    nameCount.textContent = currentLength + " / " + maxLength + "자";
 }
 
 nameInput.addEventListener("input", handleNameInput);
@@ -143,7 +148,17 @@ function showStep(index) {
     flowSteps.forEach((step, i) => { step.hidden = i !== index; });
     progressItems.forEach((item, i) => {
         item.classList.toggle("is-active", i === index);
+
+        // 화면 낭독기에도 현재 단계를 알려 줌
+        if (i === index) {
+            item.setAttribute("aria-current", "step");
+        } else {
+            item.removeAttribute("aria-current");
+        }
     });
+
+    // 단계가 바뀌면 누른 버튼이 숨겨지므로 새 단계 제목으로 초점 이동
+    flowSteps[index].querySelector("h3").focus();
 }
 
 const videoCallDialog = document.querySelector("#video-call-dialog");
@@ -205,8 +220,10 @@ nicknameNext.addEventListener("click", () => {
     showStep(1);
 });
 
+// 슬라이더 값(0, 1, 2) 대신 "5개"처럼 실제 의미를 읽어 주도록 aria-valuetext 변경
 wordCountRange.addEventListener("input", () => {
     wordCountValue.value = wordCountValues[wordCountRange.value] + "개";
+    wordCountRange.setAttribute("aria-valuetext", wordCountValue.value);
 });
 
 // 문장 포함을 체크하면 문장 수 영역을 보여 주고 선택 가능, 해제하면 숨기고 disabled
@@ -247,6 +264,7 @@ restartButton.addEventListener("click", () => {
     nicknameCount.textContent = "0 / 10자";
     wordCountRange.value = "1";
     wordCountValue.value = "5개";
+    wordCountRange.setAttribute("aria-valuetext", "5개");
     sentenceOption.checked = false;
     updateSentenceOptions();
     document.querySelector("input[name=sentence-count][value='2']").checked = true;
@@ -1004,7 +1022,7 @@ const menuLinks = document.querySelectorAll("#main-menu a");
 // 주소의 #값과 같은 메뉴에만 aria-current 표시 (주소에 #이 없으면 서비스 소개)
 function updateCurrentMenu() {
     let currentHash = location.hash;
-    if (currentHash === "") currentHash = "#about";
+    if (currentHash === "" || currentHash === "#main-content") currentHash = "#about";
 
     menuLinks.forEach((link) => {
         if (link.getAttribute("href") === currentHash) {
@@ -1038,4 +1056,12 @@ menuToggle.addEventListener("click", () => {
 // 목적지를 고르면 메뉴 닫기
 menuLinks.forEach((link) => {
     link.addEventListener("click", () => setMenuOpen(false));
+});
+
+// 메뉴가 열려 있을 때 Esc 키로 닫고 메뉴 버튼으로 초점 되돌리기
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mainMenu.classList.contains("is-open")) {
+        setMenuOpen(false);
+        menuToggle.focus();
+    }
 });
