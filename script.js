@@ -84,39 +84,44 @@ function handleAgreeChange() {
 
 agreeCheck.addEventListener("change", handleAgreeChange);
 
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
+// ===== 탭 컴포넌트 =====
+function selectTab(groupTabs, selectedTab) {
+    groupTabs.forEach((tab) => {
+        const panel = document.querySelector(tab.dataset.target);
+        const isSelected = tab === selectedTab;
 
-function resetTabsAndPanels() {
-    tabs.forEach(function (tab) {
-        tab.classList.remove("is-active");
-        tab.setAttribute("aria-selected", "false");
+        tab.classList.toggle("is-active", isSelected);
+        tab.setAttribute("aria-selected", isSelected ? "true" : "false");
+        // 선택된 탭만 Tab 키로 이동, 나머지 탭은 방향키로 이동
+        tab.tabIndex = isSelected ? 0 : -1;
+
+        panel.classList.toggle("is-active", isSelected);
+        panel.hidden = !isSelected;
     });
+}
 
-    panels.forEach(function (panel) {
-        panel.classList.remove("is-active");
-        panel.hidden = true;
+function setupTabs(tabGroup) {
+    const groupTabs = tabGroup.querySelectorAll("[role=tab]");
+
+    groupTabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => selectTab(groupTabs, tab));
+
+        tab.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+
+            let nextIndex = event.key === "ArrowRight" ? index + 1 : index - 1;
+
+            // 끝에서 누르면 반대쪽 처음 탭으로
+            if (nextIndex >= groupTabs.length) nextIndex = 0;
+            if (nextIndex < 0) nextIndex = groupTabs.length - 1;
+
+            selectTab(groupTabs, groupTabs[nextIndex]);
+            groupTabs[nextIndex].focus();
+        });
     });
 }
-function activateTab(clickedTab) {
-    const targetSelector = clickedTab.dataset.target;
-    const targetPanel = document.querySelector(targetSelector);
 
-    clickedTab.classList.add("is-active");
-    clickedTab.setAttribute("aria-selected", "true");
-
-    targetPanel.classList.add("is-active");
-    targetPanel.hidden = false;
-}
-
-function handleTabClick(event) {
-    resetTabsAndPanels();
-    activateTab(event.currentTarget);
-}
-
-tabs.forEach(function (tab) {
-    tab.addEventListener("click", handleTabClick);
-});
+document.querySelectorAll(".tabs").forEach(setupTabs);
 
 const trainingFlow = document.querySelector("#training-flow");
 const flowSteps = trainingFlow.querySelectorAll(".step");
@@ -161,6 +166,33 @@ function showStep(index) {
     flowSteps[index].querySelector("h3").focus();
 }
 
+// ===== 공통 모달 =====
+let modalOpener = null;
+
+// 모달을 연 버튼을 기억해 두었다가 닫히면 그 버튼으로 초점을 되돌림
+function openModal(modal, opener) {
+    modalOpener = opener;
+    modal.showModal();
+}
+
+// nextFocus를 넘기면 닫은 뒤 그 요소로 초점 이동
+function closeModal(modal, nextFocus) {
+    if (nextFocus) modalOpener = nextFocus;
+    modal.close();
+}
+
+document.querySelectorAll(".modal").forEach((modal) => {
+    // 닫기 버튼과 Esc 키 모두 close 이벤트가 발생
+    modal.addEventListener("close", () => {
+        if (modalOpener) modalOpener.focus();
+        modalOpener = null;
+    });
+
+    modal.querySelectorAll("[data-modal-close]").forEach((button) => {
+        button.addEventListener("click", () => closeModal(modal));
+    });
+});
+
 const videoCallDialog = document.querySelector("#video-call-dialog");
 const videoCallCancel = document.querySelector("#video-call-cancel");
 const videoCallConfirm = document.querySelector("#video-call-confirm");
@@ -175,18 +207,22 @@ function revokeVideoCallAgreement() {
 
 startButton.addEventListener("click", () => {
     if(!agreeCheck.checked) return;
-    videoCallDialog.showModal();
+    openModal(videoCallDialog, startButton);
 });
 
 videoCallCancel.addEventListener("click", () => {
-    videoCallDialog.close();
+    closeModal(videoCallDialog, agreeCheck);
     revokeVideoCallAgreement();
 })
 
-videoCallDialog.addEventListener("cancel", revokeVideoCallAgreement);
+// Esc로 닫으면 동의 취소 후 체크박스로 초점 이동
+videoCallDialog.addEventListener("cancel", () => {
+    modalOpener = agreeCheck;
+    revokeVideoCallAgreement();
+});
 videoCallConfirm.addEventListener("click", () => {
     if(!agreeCheck.checked) return;
-    videoCallDialog.close();
+    closeModal(videoCallDialog, nicknameInput);
     resetQuiz();
     trainingFlow.hidden = false;
     showStep(0);
@@ -693,6 +729,7 @@ const reserveList = document.querySelector("#reserve-list");
 const reserveEmpty = document.querySelector("#reserve-empty");
 const reserveCount = document.querySelector("#reserve-count");
 const filterButtons = document.querySelectorAll(".filter-button");
+const reserveDetail = document.querySelector("#reserve-detail");
 let currentTopic = "전체";
 
 const messageMinLength = 10;
@@ -877,7 +914,19 @@ function renderReservations() {
 
         if (currentTopic === "전체" || r.topic === currentTopic) {
             const item = document.createElement("li");
-            item.textContent = r.date + " " + r.time + " · " + r.topic + " · " + r.name + "님";
+            const text = document.createElement("span");
+            const detailButton = document.createElement("button");
+
+            text.textContent = r.date + " " + r.time + " · " + r.topic + " · " + r.name + "님";
+            detailButton.type = "button";
+            detailButton.className = "sub-button";
+            detailButton.textContent = "상세 보기";
+            // 같은 이름의 버튼이 여러 개라서 어떤 예약인지 이름에 포함
+            detailButton.setAttribute("aria-label", r.date + " " + r.time + " 예약 상세 보기");
+            detailButton.addEventListener("click", () => showReservationDetail(r, detailButton));
+
+            item.appendChild(text);
+            item.appendChild(detailButton);
             reserveList.appendChild(item);
             shownCount += 1;
         }
@@ -898,6 +947,17 @@ function renderReservations() {
 
     reserveList.hidden = shownCount === 0;
     reserveEmpty.hidden = shownCount > 0;
+}
+
+function showReservationDetail(reservation, opener) {
+    document.querySelector("#detail-name").textContent = reservation.name + "님";
+    document.querySelector("#detail-date").textContent = reservation.date;
+    document.querySelector("#detail-time").textContent = reservation.time;
+    document.querySelector("#detail-topic").textContent = reservation.topic;
+    document.querySelector("#detail-message").textContent = reservation.message;
+    document.querySelector("#detail-email").textContent = reservation.feedbackEmail ? reservation.feedbackEmail : "받지 않음";
+
+    openModal(reserveDetail, opener);
 }
 
 filterButtons.forEach((button) => {
@@ -1064,4 +1124,19 @@ document.addEventListener("keydown", (event) => {
         setMenuOpen(false);
         menuToggle.focus();
     }
+});
+
+// ===== 아코디언 컴포넌트 =====
+function toggleAccordion(button) {
+    const panel = document.querySelector("#" + button.getAttribute("aria-controls"));
+    const isOpen = button.getAttribute("aria-expanded") === "true";
+
+    button.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    button.querySelector(".accordion-state").textContent = isOpen ? "펼치기 +" : "접기 −";
+    panel.hidden = isOpen;
+}
+
+// .accordion-button이 있는 곳이면 어디서든 같은 방식으로 동작
+document.querySelectorAll(".accordion-button").forEach((button) => {
+    button.addEventListener("click", () => toggleAccordion(button));
 });

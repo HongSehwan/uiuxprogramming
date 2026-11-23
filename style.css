@@ -105,7 +105,7 @@ footer {
 /* 메뉴로 이동했을 때 고정 메뉴에 제목이 가려지지 않게 */
 section[id],
 main {
-    scroll-margin-top: 120px;
+    scroll-margin-top: 160px;
 }
 
 h1 {
@@ -208,7 +208,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
-h3:focus-visible {
+h3:focus-visible,
+.panel:focus-visible {
     outline: 3px solid #2f4f9e;
     outline-offset: 3px;
 }
@@ -218,7 +219,8 @@ body.dark button:focus-visible,
 body.dark input:focus-visible,
 body.dark select:focus-visible,
 body.dark textarea:focus-visible,
-body.dark h3:focus-visible {
+body.dark h3:focus-visible,
+body.dark .panel:focus-visible {
     outline-color: #ffd166;
 }
 
@@ -431,7 +433,8 @@ body.dark .panel {
     border-color: #50515f;
 }
 
-#video-call-dialog {
+/* 공통 모달 */
+.modal {
     width: min(520px, calc(100% - 32px));
     max-width: none;
     padding: 24px;
@@ -441,10 +444,21 @@ body.dark .panel {
     color: #27232c;
 }
 
-#video-call-dialog::backdrop {background: rgba(30, 20, 39, .6);}
-#video-call-dialog .dialog-actions {display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;}
-#video-call-dialog button {min-height: 44px;}
-body.dark #video-call-dialog {background: #50515f; color: #fff;}
+.modal h2 {margin-top: 0;}
+.modal::backdrop {background: rgba(30, 20, 39, .6);}
+.modal-actions {display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;}
+.modal button {min-height: 44px;}
+body.dark .modal {background: #50515f; color: #fff;}
+
+.detail-list {margin: 0;}
+.detail-list > div {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #deddea;
+}
+.detail-list dt {flex: 0 0 120px; font-weight: 700;}
+.detail-list dd {margin: 0; word-break: keep-all;}
 
 .training-flow {
     padding: 24px;
@@ -880,6 +894,11 @@ body.dark .word-quiz h2 {
 }
 
 .reserve-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     padding: 12px 0;
     border-bottom: 1px solid #deddea;
 }
@@ -901,6 +920,75 @@ body.dark .count-text.is-ok {
 
 body.dark .field-error {
     color: #ffb3c1;
+}
+
+.component-help {
+    color: #555763;
+    font-size: 15px;
+}
+
+/* 아코디언 */
+.accordion {
+    border-top: 1px solid #deddea;
+}
+
+.accordion-title {
+    margin: 0;
+    border-bottom: 1px solid #deddea;
+}
+
+.accordion-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 8px;
+    border-radius: 0;
+    color: #353b48;
+    background-color: transparent;
+    font-weight: 700;
+    text-align: left;
+}
+
+.accordion-button:hover {
+    color: #2f4f9e;
+    background-color: #eef2fb;
+}
+
+/* 펼쳐진 질문은 배경색과 함께 '접기' 문구로 구분 */
+.accordion-button[aria-expanded="true"] {
+    color: #2f4f9e;
+    background-color: #eef2fb;
+}
+
+.accordion-state {
+    flex: 0 0 auto;
+    font-size: 14px;
+    color: #2f4f9e;
+}
+
+.accordion-panel {
+    padding: 4px 16px 8px;
+    border-bottom: 1px solid #deddea;
+}
+
+.accordion-panel[hidden] {
+    display: none;
+}
+
+body.dark .accordion-button {
+    color: #f4f4f8;
+}
+
+body.dark .accordion-button:hover,
+body.dark .accordion-button[aria-expanded="true"] {
+    color: #b9b5ff;
+    background-color: #2d2e38;
+}
+
+body.dark .accordion-state {
+    color: #b9b5ff;
 }
 
 /* 나의 예약 내역 필터 */
@@ -1055,8 +1143,16 @@ body.dark .empty-message {
     }
 
     .training-flow {padding: 20px;}
-    #video-call-dialog .dialog-actions {flex-direction: column-reverse;}
-    #video-call-dialog .dialog-actions button {width: 100%;}
+    /* 모바일은 메뉴가 한 줄이라 여백을 줄임 */
+    section[id],
+    main {
+        scroll-margin-top: 90px;
+    }
+
+    .modal-actions {flex-direction: column-reverse;}
+    .modal-actions button {width: 100%;}
+    .detail-list > div {flex-direction: column; gap: 4px;}
+    .detail-list dt {flex-basis: auto;}
     .training-flow .step-actions {flex-direction: column-reverse;}
     .training-flow input[type="checkbox"],
     .training-flow input[type="radio"] {width: auto;}
