@@ -205,6 +205,12 @@
                 <li class="progress__item">3. 확인</li>
             </ol>
 
+            <!-- 임시 보관·복구 안내, 복구한 내용이 있을 때만 버튼 표시 -->
+            <div class="restore-notice">
+                <p id="flow-draft-status" role="status" aria-live="polite"></p>
+                <button id="flow-restart" class="sub-button" type="button" hidden>처음부터 입력하기</button>
+            </div>
+
             <section class="step" data-step="1" hidden>
                 <h3 tabindex="-1">학습 닉네임을 입력해 주세요.</h3>
                 <div class="field" id="nickname-field">
@@ -354,6 +360,12 @@
             <p>원하는 날짜와 시간을 골라 원어민 선생님과의 1:1 화상수업을 예약합니다. <span class="required">필수</span> 표시가 있는 항목은 꼭 입력해 주세요.</p>
 
             <form id="reserve-form" class="reserve-form" novalidate>
+                <!-- 임시 보관·복구 안내, 복구한 내용이 있을 때만 버튼 표시 -->
+                <div class="restore-notice">
+                    <p id="reserve-draft-status" role="status" aria-live="polite"></p>
+                    <button id="reserve-restart" class="sub-button" type="button" hidden>처음부터 입력하기</button>
+                </div>
+
                 <div class="form-row">
                     <label for="reserve-name">예약자 이름 <span class="required">필수</span></label>
                     <input id="reserve-name" name="name" type="text" minlength="2" maxlength="10" required autocomplete="name" aria-describedby="reserve-name-help reserve-name-error">

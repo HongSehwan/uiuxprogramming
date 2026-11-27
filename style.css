@@ -927,6 +927,37 @@ body.dark .field-error {
     font-size: 15px;
 }
 
+/* 작성 상태 복구 안내 */
+.restore-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 12px 16px;
+    color: #2f4f9e;
+    background-color: #eef2fb;
+    border-left: 4px solid #2f4f9e;
+    border-radius: 10px;
+}
+
+/* 안내 문장이 비어 있으면 영역 전체를 숨김 */
+.restore-notice:has(p:empty) {
+    display: none;
+}
+
+.restore-notice p {
+    margin: 0;
+    font-weight: 700;
+}
+
+body.dark .restore-notice {
+    color: #f4f4f8;
+    background-color: #2d2e38;
+    border-left-color: #ffd166;
+}
+
 /* 아코디언 */
 .accordion {
     border-top: 1px solid #deddea;

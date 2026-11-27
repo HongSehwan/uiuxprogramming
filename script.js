@@ -123,6 +123,40 @@ function setupTabs(tabGroup) {
 
 document.querySelectorAll(".tabs").forEach(setupTabs);
 
+// ===== 작성 중인 내용 임시 보관 =====
+const savedMessage = "작성 내용을 임시 보관했어요.";
+
+function saveDraft(key, draft, statusBox) {
+    try {
+        sessionStorage.setItem(key, JSON.stringify(draft));
+        // 같은 문장이 이미 보이면 다시 넣지 않아 반복 안내를 줄임
+        if (statusBox.textContent !== savedMessage) statusBox.textContent = savedMessage;
+    } catch (error) {
+        // 입력값은 그대로 두고 새로고침 위험만 알림
+        statusBox.textContent = "작성 내용을 임시 보관하지 못했어요. 새로고침하면 작성 내용이 사라질 수 있어요.";
+    }
+}
+
+function loadDraft(key) {
+    try {
+        const saved = sessionStorage.getItem(key);
+        if (saved === null) return null;
+        return JSON.parse(saved);
+    } catch (error) {
+        return null;
+    }
+}
+
+function clearDraft(key, statusBox, discardButton) {
+    try {
+        sessionStorage.removeItem(key);
+    } catch (error) {
+        // 저장소를 쓸 수 없으면 지울 것도 없음
+    }
+    statusBox.textContent = "";
+    discardButton.hidden = true;
+}
+
 const trainingFlow = document.querySelector("#training-flow");
 const flowSteps = trainingFlow.querySelectorAll(".step");
 const progressItems = trainingFlow.querySelectorAll(".progress__item");
@@ -148,8 +182,11 @@ const wordCountValues = ["3", "5", "10"];
 const formData = {
     nickname: "", wordCount: "5", sentence: false, sentenceCount: "2"
 }
+let currentStep = 0;
 
 function showStep(index) {
+    currentStep = index;
+    saveFlowDraft();
     flowSteps.forEach((step, i) => { step.hidden = i !== index; });
     progressItems.forEach((item, i) => {
         item.classList.toggle("is-active", i === index);
@@ -198,6 +235,7 @@ const videoCallCancel = document.querySelector("#video-call-cancel");
 const videoCallConfirm = document.querySelector("#video-call-confirm");
 
 function revokeVideoCallAgreement() {
+    clearDraft(flowDraftKey, flowDraftStatus, flowRestart);
     agreeCheck.checked = false;
     trainingFlow.hidden = true;
     resetQuiz();
@@ -276,7 +314,7 @@ function updateSentenceOptions() {
 sentenceOption.addEventListener("change", updateSentenceOptions);
 
 optionPrev.addEventListener("click", () => showStep(0));
-optionNext.addEventListener("click", () => {
+function fillSummary() {
     formData.wordCount = wordCountValues[wordCountRange.value];
     formData.sentence = sentenceOption.checked;
     const count = document.querySelector("input[name=sentence-count]:checked");
@@ -284,12 +322,19 @@ optionNext.addEventListener("click", () => {
     summaryNickname.textContent = formData.nickname;
     summaryWordCount.textContent = formData.wordCount + "개";
     summarySentence.textContent = formData.sentence ? formData.sentenceCount + "개 포함" : "미포함";
+}
+
+optionNext.addEventListener("click", () => {
+    fillSummary();
     showStep(2);
 });
 
 summaryPrev.addEventListener("click", () => showStep(1));
+
+// 설정 완료가 이 과업의 최종 저장 (임시값도 삭제됨)
 finishButton.addEventListener("click", () => showStep(3));
-restartButton.addEventListener("click", () => {
+
+function resetTrainingFlow() {
     formData.nickname = "";
     formData.wordCount = "5";
     formData.sentence = false;
@@ -308,7 +353,79 @@ restartButton.addEventListener("click", () => {
     summaryWordCount.textContent = "";
     summarySentence.textContent = "";
     resetQuiz();
+    // 닉네임이 비었으므로 showStep에서 임시값이 삭제됨
     showStep(0);
+}
+
+restartButton.addEventListener("click", resetTrainingFlow);
+
+// ===== 학습 설정 작성 상태 보관과 복구 =====
+const flowDraftKey = "dugeun-flow-draft";
+const flowDraftStatus = document.querySelector("#flow-draft-status");
+const flowRestart = document.querySelector("#flow-restart");
+const stepNames = ["1단계(정보)", "2단계(조건)", "3단계(확인)"];
+
+// 닉네임을 입력한 경우에만 보관하고 설정을 완료하면 삭제
+function saveFlowDraft() {
+    if (currentStep === 3 || nicknameInput.value.trim() === "") {
+        clearDraft(flowDraftKey, flowDraftStatus, flowRestart);
+        return;
+    }
+
+    saveDraft(flowDraftKey, {
+        nickname: nicknameInput.value,
+        wordCount: wordCountRange.value,
+        sentence: sentenceOption.checked,
+        sentenceCount: document.querySelector("input[name=sentence-count]:checked").value,
+        step: currentStep
+    }, flowDraftStatus);
+}
+
+// 입력칸, 슬라이더, 체크박스, 라디오 모두 이 영역 안에 있어서 한 번에 연결
+trainingFlow.addEventListener("input", saveFlowDraft);
+trainingFlow.addEventListener("change", saveFlowDraft);
+
+function restoreFlowDraft() {
+    const draft = loadDraft(flowDraftKey);
+
+    // 보관값이 없거나 형식이 맞지 않으면 복구하지 않음
+    if (draft === null || typeof draft.nickname !== "string" || draft.nickname.trim() === "") return;
+
+    nicknameInput.value = draft.nickname.slice(0, 10);
+    nicknameCount.textContent = nicknameInput.value.length + " / 10자";
+    formData.nickname = nicknameInput.value.trim();
+
+    if (wordCountValues[draft.wordCount] !== undefined) {
+        wordCountRange.value = draft.wordCount;
+    }
+    wordCountValue.value = wordCountValues[wordCountRange.value] + "개";
+    wordCountRange.setAttribute("aria-valuetext", wordCountValue.value);
+
+    sentenceOption.checked = draft.sentence === true;
+    updateSentenceOptions();
+    sentenceRadios.forEach((radio) => {
+        if (radio.value === draft.sentenceCount) radio.checked = true;
+    });
+
+    // 1~3단계만 이어서 진행
+    let step = draft.step;
+    if (step !== 1 && step !== 2) step = 0;
+    if (step === 2) fillSummary();
+
+    // 학습 설정은 카메라 동의 후에만 보여 동의 상태도 함께 복구
+    agreeCheck.checked = true;
+    handleAgreeChange();
+    trainingFlow.hidden = false;
+    // showStep이 다시 보관하므로 복구 안내는 그다음에 적음
+    showStep(step);
+    flowDraftStatus.textContent = "작성 내용을 불러왔어요. " + stepNames[step] + "부터 이어서 작성하세요.";
+    flowRestart.hidden = false;
+}
+
+flowRestart.addEventListener("click", () => {
+    resetTrainingFlow();
+    flowDraftStatus.textContent = "처음부터 입력할 수 있어요.";
+    nicknameInput.focus();
 });
 
 // 학습 설정을 마친 학습자가 설정한 단어 수와 문장 옵션에 맞춰 한국어 뜻을 보고 영어 단어와 문장을 직접 입력하며 학습 진행
@@ -880,12 +997,16 @@ reserveDate.addEventListener("change", validateReserveDate);
 reserveTime.addEventListener("change", validateReserveTime);
 
 // 체크하면 이메일 칸을 보여 주고 사용 가능, 해제하면 숨기고 disabled
-feedbackCheck.addEventListener("change", () => {
-    const checked = feedbackCheck.checked;
-
+function setFeedbackArea(checked) {
     feedbackArea.hidden = !checked;
     feedbackEmail.disabled = !checked;
     feedbackCheck.setAttribute("aria-expanded", checked ? "true" : "false");
+}
+
+feedbackCheck.addEventListener("change", () => {
+    const checked = feedbackCheck.checked;
+
+    setFeedbackArea(checked);
 
     if (checked) {
         feedbackEmail.focus();
@@ -976,6 +1097,7 @@ function finishReserving() {
     isReserving = false;
     reserveSubmit.disabled = false;
     reserveReset.disabled = false;
+    reserveRestart.disabled = false;
     reserveSubmit.textContent = "예약 신청하기";
 }
 
@@ -1043,6 +1165,7 @@ function handleReserveSubmit(event) {
     isReserving = true;
     reserveSubmit.disabled = true;
     reserveReset.disabled = true;
+    reserveRestart.disabled = true;
     reserveSubmit.textContent = "예약하는 중...";
     showReserveStatus("예약을 신청하고 있습니다. 잠시만 기다려 주세요.", "is-loading");
 
@@ -1064,15 +1187,78 @@ reserveForm.addEventListener("reset", () => {
     reserveMessageCount.textContent = "0 / 200자 (10자 이상 필요)";
     reserveMessageCount.classList.remove("is-ok");
 
-    feedbackArea.hidden = true;
-    feedbackEmail.disabled = true;
-    feedbackCheck.setAttribute("aria-expanded", "false");
+    setFeedbackArea(false);
 
     showReserveStatus("", "");
     finishReserving();
+
+    // 다시 작성, 처음부터 입력하기, 예약 성공 모두 임시값 삭제
+    clearDraft(reserveDraftKey, reserveDraftStatus, reserveRestart);
 });
 
 renderReservations();
+
+// ===== 예약 폼 작성 상태 보관과 복구 =====
+const reserveDraftKey = "dugeun-reserve-draft";
+const reserveDraftStatus = document.querySelector("#reserve-draft-status");
+const reserveRestart = document.querySelector("#reserve-restart");
+
+function saveReserveDraft() {
+    const draft = {
+        name: reserveName.value,
+        date: reserveDate.value,
+        time: reserveTime.value,
+        topic: reserveForm.querySelector("input[name=topic]:checked").value,
+        message: reserveMessage.value,
+        feedback: feedbackCheck.checked,
+        email: feedbackEmail.value
+    };
+
+    // 직접 입력한 내용이 하나도 없으면 보관하지 않음
+    if (draft.name.trim() === "" && draft.date === "" && draft.time === "" && draft.message.trim() === "") {
+        clearDraft(reserveDraftKey, reserveDraftStatus, reserveRestart);
+        return;
+    }
+
+    saveDraft(reserveDraftKey, draft, reserveDraftStatus);
+}
+
+reserveForm.addEventListener("input", saveReserveDraft);
+reserveForm.addEventListener("change", saveReserveDraft);
+
+function restoreReserveDraft() {
+    const draft = loadDraft(reserveDraftKey);
+
+    if (draft === null || typeof draft.name !== "string" || typeof draft.message !== "string") return;
+
+    reserveName.value = draft.name.slice(0, 10);
+    reserveDate.value = draft.date;
+    reserveTime.value = draft.time;
+    // 목록에 없는 시간이면 '시간을 선택해 주세요'
+    if (reserveTime.selectedIndex === -1) reserveTime.selectedIndex = 0;
+    reserveMessage.value = draft.message.slice(0, 200);
+    updateNameCount();
+    updateMessageCount();
+
+    reserveForm.querySelectorAll("input[name=topic]").forEach((radio) => {
+        if (radio.value === draft.topic) radio.checked = true;
+    });
+
+    feedbackCheck.checked = draft.feedback === true;
+    setFeedbackArea(feedbackCheck.checked);
+    if (feedbackCheck.checked && typeof draft.email === "string") feedbackEmail.value = draft.email;
+
+    reserveDraftStatus.textContent = "작성 내용을 불러왔어요. 이어서 작성하거나 처음부터 다시 입력할 수 있어요.";
+    reserveRestart.hidden = false;
+}
+
+reserveRestart.addEventListener("click", () => {
+    if (isReserving) return;
+    // reset 이벤트에서 임시값이 지워진 뒤 안내를 적음
+    reserveForm.reset();
+    reserveDraftStatus.textContent = "처음부터 입력할 수 있어요.";
+    reserveName.focus();
+});
 
 // ===== 주요 메뉴 =====
 const menuToggle = document.querySelector("#menu-toggle");
@@ -1140,3 +1326,7 @@ function toggleAccordion(button) {
 document.querySelectorAll(".accordion-button").forEach((button) => {
     button.addEventListener("click", () => toggleAccordion(button));
 });
+
+// ===== 새로고침 후 작성하던 내용 복구 =====
+restoreReserveDraft();
+restoreFlowDraft();
