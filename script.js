@@ -1248,15 +1248,18 @@ function restoreReserveDraft() {
     setFeedbackArea(feedbackCheck.checked);
     if (feedbackCheck.checked && typeof draft.email === "string") feedbackEmail.value = draft.email;
 
-    reserveDraftStatus.textContent = "작성 내용을 불러왔어요. 이어서 작성하거나 처음부터 다시 입력할 수 있어요.";
+    // 1차 테스트에서 복구된 내용을 다시 입력해서, 다시 쓰지 않아도 된다는 것과 예약 내역은 남는다는 것을 알림
+    reserveDraftStatus.textContent = "새로고침 전에 쓰던 예약 내용을 그대로 불러왔어요. 다시 입력하지 않아도 돼요. '처음부터 입력하기'를 눌러도 나의 예약 내역은 지워지지 않아요.";
     reserveRestart.hidden = false;
+    // 새로고침 전 스크롤 위치가 아니라 복구 안내가 보이도록 이동
+    reserveDraftStatus.scrollIntoView({ block: "center" });
 }
 
 reserveRestart.addEventListener("click", () => {
     if (isReserving) return;
     // reset 이벤트에서 임시값이 지워진 뒤 안내를 적음
     reserveForm.reset();
-    reserveDraftStatus.textContent = "처음부터 입력할 수 있어요.";
+    reserveDraftStatus.textContent = "처음부터 입력할 수 있어요. 나의 예약 내역은 그대로 남아 있어요.";
     reserveName.focus();
 });
 
@@ -1328,5 +1331,7 @@ document.querySelectorAll(".accordion-button").forEach((button) => {
 });
 
 // ===== 새로고침 후 작성하던 내용 복구 =====
+// 브라우저가 이전 스크롤 위치로 되돌리지 않게 해서 복구 안내로 이동할 수 있게 함
+history.scrollRestoration = "manual";
 restoreReserveDraft();
 restoreFlowDraft();

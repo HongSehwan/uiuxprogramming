@@ -32,6 +32,21 @@ header {
     padding-top: 48px;
     padding-bottom: 32px;
 }
+
+/* 첫 화면에서 바로 예약으로 이동하는 링크 */
+.header-link {
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 10px;
+    color: #ffffff;
+    background-color: #353b48;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.header-link:hover {
+    background-color: #2f4f9e;
+}
 section {
     margin-top: 56px;
 }
